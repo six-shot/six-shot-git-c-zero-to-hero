@@ -43,3 +43,4 @@ make sure you understand everything you send.
 
 Code excerpts come from [Git](https://git.kernel.org/pub/scm/git/git.git), licensed
 under the GNU General Public License version 2.
+# six-shot-git-c-zero-to-hero
