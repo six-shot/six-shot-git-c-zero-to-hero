@@ -33,7 +33,7 @@ reading list and a glossary.
 ## How to use it
 
 Open `index.html` in a browser, or read it online at
-https://six-shot.github.io/git-c-zero-to-hero/ once GitHub Pages is on.
+[https://six-shot.github.io/git-c-zero-to-hero/](https://six-shot.github.io/six-shot-git-c-zero-to-hero/) once GitHub Pages is on.
 
 Type every example yourself, try each exercise before opening the answer, and read
 the compiler's warnings carefully. Git's community wants to mentor humans, not AIs:
