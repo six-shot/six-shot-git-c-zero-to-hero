@@ -1,0 +1,814 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Learn C by reading Git</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Black and white only, single light theme. Layout: a single reading column with a sticky level rail on wide screens; each level = concept, real code from the repo, try-it, exercise. */
+:root{
+  --bg:#FFFFFF; --surface:#FFFFFF; --ink:#000000; --muted:#444444; --line:#000000;
+  --accent:#000000; --accent-soft:#F0F0F0; --amber:#000000; --amber-soft:#F5F5F5;
+  --code-bg:#000000; --code-fg:#FFFFFF; --code-kw:#FFFFFF; --code-cm:#AAAAAA; --code-str:#FFFFFF;
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.65 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+.wrap{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:220px minmax(0,1fr);gap:48px}
+@media (max-width:900px){.wrap{grid-template-columns:minmax(0,1fr)} nav.rail{display:none}}
+nav.rail{position:sticky;top:env(safe-area-inset-top,0px);align-self:start;padding-top:40px;font-size:13.5px;max-height:100vh;overflow:auto}
+nav.rail a{display:flex;gap:10px;color:var(--muted);text-decoration:none;padding:4px 0}
+nav.rail a:hover,nav.rail a:focus-visible{color:var(--accent)}
+nav.rail .n{font-family:var(--mono);font-size:12px;width:22px;flex:none;color:var(--accent)}
+nav.rail a.done{color:var(--ink)} nav.rail a.done .n::after{content:" ✓"}
+main{min-width:0}
+header.hero{padding:48px 0 28px;border-bottom:1px solid var(--line)}
+.bytes{font-family:var(--mono);font-size:13px;color:var(--muted);letter-spacing:.06em;display:flex;flex-wrap:wrap;gap:6px 10px}
+.bytes b{color:var(--accent);font-weight:600}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(34px,6vw,56px);line-height:1.05;margin:14px 0 14px;text-wrap:balance;letter-spacing:-.02em}
+.bytes-note{font-size:13px;color:var(--muted);margin:6px 0 0}
+.lede{font-size:18px;max-width:64ch;color:var(--muted);margin:0}
+h2{font-family:var(--display);font-weight:800;font-size:28px;line-height:1.15;margin:0 0 6px;text-wrap:balance}
+h3{font-family:var(--display);font-weight:600;font-size:19px;margin:24px 0 6px}
+p,li{max-width:68ch}
+section.level{padding:44px 0 8px;border-bottom:1px solid var(--line);scroll-margin-top:16px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.eyebrow .where{color:var(--muted);letter-spacing:.02em;text-transform:none}
+code{font-family:var(--mono);font-size:.88em;background:var(--accent-soft);padding:1px 5px;border-radius:4px}
+pre{background:var(--code-bg);color:var(--code-fg);font:13.5px/1.6 var(--mono);padding:16px 18px;border-radius:8px;overflow-x:auto;margin:12px 0}
+pre code{background:none;padding:0;font-size:inherit;color:inherit}
+pre .k{color:var(--code-kw);font-weight:600} pre .c{color:var(--code-cm);font-style:italic} pre .s{color:var(--code-str)}
+.file{font-family:var(--mono);font-size:12px;color:var(--muted);margin:16px 0 -6px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin:16px 0}
+.grid2>div{min-width:0}
+.try{border:1px dashed var(--line);border-radius:8px;padding:12px 16px;margin:16px 0}
+.try .lbl,.ex .lbl{font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase}
+.try .lbl{color:var(--accent)}
+.ex{background:var(--amber-soft);border:1px solid var(--line);border-radius:8px;padding:14px 18px;margin:18px 0}
+.ex .lbl{color:var(--amber)}
+.ex p{margin:6px 0}
+details{margin-top:8px}
+summary{cursor:pointer;color:var(--amber);font-weight:600}
+summary:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.mark{display:flex;align-items:center;gap:8px;margin:18px 0 0;font-size:14px;color:var(--muted)}
+.mark input{width:18px;height:18px;accent-color:var(--accent)}
+table{border-collapse:collapse;font-size:14px;width:100%}
+.tbl{overflow-x:auto;margin:12px 0}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+td code{white-space:nowrap}
+ol.trace{padding-left:22px} ol.trace li{margin:6px 0}
+.progress{font-family:var(--mono);font-size:13px;color:var(--muted);margin-top:18px}
+.progress span{color:var(--accent);font-weight:600}
+a{color:var(--accent)}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<nav class="rail" aria-label="Sections" id="rail"></nav>
+<main>
+
+<header class="hero">
+  <div class="bytes" aria-label="A Git command and the C function it calls"><b>git merge-tree</b> <span>→ run_builtin()</span> <span>→ cmd_merge_tree(argc, argv, prefix, repo)</span></div>
+  <p class="bytes-note">Every Git command is a C function. <a href="#l9">Level 9</a> shows how the command line reaches it.</p>
+  <h1>Learn C by reading Git</h1>
+  <p class="lede">A zero-to-hero path through the C that Git is written in, aimed at people who want to contribute, especially to the work on reducing Git's global state (<code>the_repository</code>). If you've never written C, start with sections A–D. Every level after that teaches one idea from a real piece of git.git, with a small exercise.</p>
+  <p class="progress">Progress: <span id="count">0</span> of <span id="total">0</span> sections marked done (saved in this browser only).</p>
+</header>
+
+<!-- how -->
+<section class="level" id="how" data-n="?" data-title="How to learn from this">
+  <div class="eyebrow">Before you start</div>
+  <h2>How to learn from this guide</h2>
+  <p>Git's community says it plainly: they want to mentor humans, not AIs. Reviewers on the mailing list will ask you why you made each change, and you have to be able to answer. So learn it properly:</p>
+  <ul>
+    <li><b>Type every example yourself</b> and compile it. Don't copy and paste.</li>
+    <li><b>Guess before you run.</b> Say what you expect the program to print. When you're wrong, that's the lesson.</li>
+    <li><b>Try each exercise for at least 15 minutes</b> before opening the answer.</li>
+    <li><b>Read compiler warnings as errors.</b> Build Git with <code>make DEVELOPER=1</code>, which turns on strict warnings, the same ones reviewers use.</li>
+    <li><b>Read the real code around every example.</b> Each level names a file and line. Open it.</li>
+    <li><b>Read other people's patches.</b> The mailing list archive at <a href="https://lore.kernel.org/git/">lore.kernel.org/git</a> shows how experienced contributors write, explain and fix their changes. This is the best teacher you have.</li>
+    <li><b>Ask in public.</b> When you're stuck for real, ask on the Git mailing list (start the subject with <code>[Outreachy]</code>) or on #git-devel (IRC or Discord, see <a href="https://git-scm.com/community">git-scm.com/community</a>). The mentors for the global-state project are Christian Couder and Usman Akinyemi. Say what you tried and what happened. Other applicants learn from the answer too.</li>
+    <li><b>Follow Git's <a href="https://git.github.io/General-Application-Information/#ai-guidelines">AI guidelines</a>.</b> Everything you send must be your own work that you understand.</li>
+  </ul>
+</section>
+
+<!-- A -->
+<section class="level" id="sa" data-n="A" data-title="What C is">
+  <div class="eyebrow">Start here · A <span class="where">no code yet</span></div>
+  <h2>What C is, and why Git uses it</h2>
+  <p>C is a programming language from 1972. It's small, fast, and very close to how the computer actually works: you manage memory yourself, and values are just bytes at addresses. Operating systems (Linux), databases (PostgreSQL, SQLite) and Git are written in it.</p>
+  <h3>Three things to know</h3>
+  <ul>
+    <li><b>It's compiled.</b> A compiler (gcc or clang) turns <code>.c</code> files into a native program. There's no interactive prompt like Python's.</li>
+    <li><b>It's statically typed, but not very strict.</b> Every variable has a type (<code>int</code>, <code>char *</code>, <code>struct repository *</code>), but C will happily convert between many of them. Warnings matter.</li>
+    <li><b>You manage memory.</b> If you ask for memory with <code>malloc</code>, you must give it back with <code>free</code>. Forget, and you have a leak. Free twice, or use it after freeing, and the program may crash or behave strangely.</li>
+  </ul>
+  <h3>What Git is made of</h3>
+  <div class="tbl"><table>
+    <tr><th>Part</th><th>Language</th><th>Where</th></tr>
+    <tr><td>The commands and the core library</td><td>C</td><td>top-level <code>*.c</code>/<code>*.h</code>, <code>builtin/</code></td></tr>
+    <tr><td>The test suite</td><td>POSIX shell</td><td><code>t/</code></td></tr>
+    <tr><td>Documentation</td><td>AsciiDoc</td><td><code>Documentation/</code></td></tr>
+    <tr><td>Build</td><td>Make (also Meson)</td><td><code>Makefile</code>, <code>meson.build</code></td></tr>
+  </table></div>
+  <h3>How it compares</h3>
+  <div class="tbl"><table>
+    <tr><th>If you know…</th><th>C will feel…</th></tr>
+    <tr><td>JavaScript / Python</td><td>Much more manual: no objects, no garbage collector, no built-in strings or lists. You build those from structs, pointers and arrays.</td></tr>
+    <tr><td>TypeScript</td><td>Types exist, but they describe memory layout, not shapes of data. There are no generics.</td></tr>
+    <tr><td>Rust / OCaml</td><td>The same low-level control as Rust, with none of the safety checks. Nothing stops a null pointer or a leak except you and the reviewers.</td></tr>
+  </table></div>
+  <label class="mark"><input type="checkbox" id="done-sa"> I've read A</label>
+</section>
+
+<!-- B -->
+<section class="level" id="sb" data-n="B" data-title="Set up">
+  <div class="eyebrow">Start here · B <span class="where">compiler · git.git · make</span></div>
+  <h2>Set up a compiler and build Git</h2>
+<pre><code><span class="c"># macOS: installs clang, make and friends</span>
+xcode-select --install
+<span class="c"># Debian/Ubuntu</span>
+sudo apt install build-essential libssl-dev libcurl4-openssl-dev libexpat1-dev gettext zlib1g-dev
+
+<span class="c"># Get Git's source and build it</span>
+git clone https://git.kernel.org/pub/scm/git/git.git
+cd git
+make -j8 DEVELOPER=1          <span class="c"># DEVELOPER=1 turns on strict warnings</span>
+
+<span class="c"># Run one test script</span>
+cd t
+./t0001-init.sh -v            <span class="c"># -v shows each test's output</span></code></pre>
+  <p>The build drops a <code>git</code> binary in the top folder. Run <code>./git version</code> to check it's yours and not the system one. Leave the full test suite (<code>make test</code>) for later; it takes a while.</p>
+  <p>For your editor, use one that can jump to a function's definition (VS Code with the C/C++ extension, or clangd). You'll do it hundreds of times a day. From the terminal, <code>git grep -n name</code> finds anything quickly.</p>
+  <label class="mark"><input type="checkbox" id="done-sb"> I've done B</label>
+</section>
+
+<!-- C -->
+<section class="level" id="sc" data-n="C" data-title="Your first C program">
+  <div class="eyebrow">Start here · C <span class="where">a scratch folder, not git.git</span></div>
+  <h2>Your first C program</h2>
+  <p>Make a folder outside the Git source, create <code>hello.c</code>, and type this:</p>
+<div class="file">hello.c</div>
+<pre><code><span class="k">#include</span> &lt;stdio.h&gt;      <span class="c">/* gives us printf */</span>
+
+<span class="k">static int</span> area(<span class="k">int</span> width, <span class="k">int</span> height)
+{
+	<span class="k">return</span> width * height;
+}
+
+<span class="k">int</span> main(<span class="k">void</span>)
+{
+	<span class="k">int</span> w = 256;
+	<span class="k">int</span> h = 128;
+
+	<span class="k">if</span> (area(w, h) &gt; 10000)
+		printf(<span class="s">"big: %d\n"</span>, area(w, h));
+	<span class="k">else</span>
+		printf(<span class="s">"small\n"</span>);
+
+	<span class="k">for</span> (<span class="k">int</span> i = 0; i &lt; 3; i++)
+		printf(<span class="s">"line %d\n"</span>, i);
+
+	<span class="k">return</span> 0;           <span class="c">/* 0 means success */</span>
+}</code></pre>
+<pre><code>cc -Wall -o hello hello.c
+./hello</code></pre>
+  <ul>
+    <li>Every program starts at <code>main</code>. Its return value is the exit code: 0 is success.</li>
+    <li>Every statement ends with <code>;</code>. Blocks use <code>{ }</code>.</li>
+    <li>Every variable and parameter has its type written in front: <code>int w</code>.</li>
+    <li><code>printf</code> fills in <code>%d</code> (an int), <code>%s</code> (a string), <code>%lu</code> (an unsigned long) and so on.</li>
+    <li>Git indents with <b>tabs</b>, puts a function's opening <code>{</code> on its own line, and uses <code>/* */</code> comments only, never <code>//</code>. Get used to that style now.</li>
+  </ul>
+  <h3>Basic types</h3>
+  <div class="tbl"><table>
+    <tr><th>Type</th><th>Holds</th><th>Example in Git</th></tr>
+    <tr><td><code>int</code></td><td>A whole number; also used for true/false (0 = false)</td><td><code>int initialized;</code></td></tr>
+    <tr><td><code>unsigned long</code>, <code>size_t</code></td><td>Non-negative numbers; <code>size_t</code> is for sizes and lengths</td><td><code>size_t len;</code> in <code>struct strbuf</code></td></tr>
+    <tr><td><code>bool</code></td><td><code>true</code>/<code>false</code> (allowed in Git since 2023)</td><td><code>bool warn_on_auto_comment_char;</code></td></tr>
+    <tr><td><code>char</code></td><td>One byte</td><td><code>'#'</code></td></tr>
+    <tr><td><code>char *</code></td><td>The address of some bytes: C's “string”</td><td><code>char *gitdir;</code></td></tr>
+    <tr><td><code>void</code></td><td>“Nothing”; a function that returns nothing</td><td><code>void prepare_repo_settings(…)</code></td></tr>
+  </table></div>
+  <h3>Reading a compiler error</h3>
+<pre><code><span class="k">int</span> n = <span class="s">"hello"</span>;
+<span class="c">hello.c:5:6: error: incompatible pointer to integer conversion initializing
+      'int' with an expression of type 'char[6]'</span></code></pre>
+  <p>The shape is always <b>file:line:column: what's wrong</b>. Go to that line. Here you tried to put a string (an array of 6 chars, including the hidden end byte) into an <code>int</code>. Fix the first error first; later ones are often caused by it.</p>
+  <div class="ex"><div class="lbl">Exercise</div>
+    <p>Add a function <code>static int is_tiff_magic(int magic)</code> that returns 1 for 42 and 0 otherwise, and call it from <code>main</code>. Then remove the <code>static int</code> return type and read the warning.</p>
+    <details><summary>Answer</summary>
+<pre><code><span class="k">static int</span> is_tiff_magic(<span class="k">int</span> magic)
+{
+	<span class="k">return</span> magic == 42;
+}</code></pre>
+<p>Comparisons give 1 or 0 in C, so you can return them directly. Without a return type, modern compilers refuse the code, because old C's “implicit int” rule is gone.</p></details>
+  </div>
+  <label class="mark"><input type="checkbox" id="done-sc"> I've done C</label>
+</section>
+
+<!-- D -->
+<section class="level" id="sd" data-n="D" data-title="Git in one picture">
+  <div class="eyebrow">Start here · D <span class="where">what the code is managing</span></div>
+  <h2>Git in one picture</h2>
+  <p>Inside every repository is a <code>.git</code> folder. The C code reads and writes it. In memory, almost everything about one repository is collected in one struct, <code>struct repository</code>.</p>
+<pre aria-label="How Git's data maps to C structs"><code>  your-project/.git/                    in memory (C)
+  ├── objects/   blobs, trees,  ───►  struct repository
+  │              commits              ├── char *gitdir        ".git"
+  ├── refs/      branches, tags ───►  ├── objects  ─► struct object_database
+  ├── index      staging area   ───►  ├── index    ─► struct index_state
+  └── config     settings       ───►  ├── settings    struct repo_settings
+                                      └── config ...
+
+  the_repository  ──►  one global pointer to "the" repository
+                       for the current command</code></pre>
+  <div class="tbl"><table>
+    <tr><th>Word</th><th>Meaning</th></tr>
+    <tr><td>Object</td><td>A stored item, named by its hash (<code>struct object_id</code>). Blob = file content, tree = folder, commit = snapshot plus message.</td></tr>
+    <tr><td>Object database (ODB)</td><td>Where objects live: loose files and packfiles</td></tr>
+    <tr><td>Ref</td><td>A name pointing at a commit: <code>refs/heads/main</code></td></tr>
+    <tr><td>Index</td><td>The staging area, what <code>git add</code> fills</td></tr>
+    <tr><td>Builtin</td><td>A command implemented in C inside the <code>git</code> binary, like <code>git add</code></td></tr>
+    <tr><td>Global state</td><td>Data any function can reach without being given it, like <code>the_repository</code></td></tr>
+    <tr><td>Libification</td><td>Making Git's code usable as a library inside other programs, which global state gets in the way of</td></tr>
+  </table></div>
+  <label class="mark"><input type="checkbox" id="done-sd"> I've read D</label>
+</section>
+
+<!-- 0 -->
+<section class="level" id="l0" data-title="Map of git.git">
+  <div class="eyebrow">Level 0 <span class="where">the top folder</span></div>
+  <h2>The map of git.git</h2>
+  <p>Git's source is large (about 640 <code>.c</code> files), but it's laid out simply.</p>
+  <div class="tbl"><table>
+    <tr><th>Where</th><th>What</th></tr>
+    <tr><td><code>git.c</code></td><td>The <code>main</code> that reads <code>git &lt;command&gt;</code> and calls the right function</td></tr>
+    <tr><td><code>builtin/*.c</code></td><td>One file per command: <code>builtin/add.c</code>, <code>builtin/merge-tree.c</code>…</td></tr>
+    <tr><td>top-level <code>*.c</code> / <code>*.h</code></td><td>The shared library code: <code>repository.c</code>, <code>environment.c</code>, <code>merge-blobs.c</code>, <code>strbuf.c</code>…</td></tr>
+    <tr><td><code>git-compat-util.h</code></td><td>Included first in every <code>.c</code> file; smooths over platform differences</td></tr>
+    <tr><td><code>t/</code></td><td>Shell test scripts, <code>t0001-init.sh</code> and so on</td></tr>
+    <tr><td><code>Documentation/</code></td><td>Man pages, plus <code>CodingGuidelines</code>, <code>SubmittingPatches</code> and <code>MyFirstContribution</code>. Read all three.</td></tr>
+  </table></div>
+  <h3>Tools for finding your way</h3>
+<pre><code>git grep -n "struct repository {"          <span class="c"># where is it defined?</span>
+git grep -n "merge_blobs("                   <span class="c"># who calls it?</span>
+git log --oneline -- merge-blobs.c           <span class="c"># history of a file</span>
+git log -S the_repository -- prune-packed.c  <span class="c"># commits that added/removed a word</span>
+git blame -L 60,90 merge-blobs.c             <span class="c"># who wrote each line, and in which commit</span></code></pre>
+  <div class="ex"><div class="lbl">Exercise</div>
+    <p>Using only <code>git grep</code>, find which file defines <code>cmd_merge_tree</code> and which line of <code>git.c</code> lists the <code>merge-tree</code> command.</p>
+    <details><summary>Answer</summary><p><code>git grep -n "^int cmd_merge_tree"</code> gives <code>builtin/merge-tree.c</code>. <code>git grep -n '"merge-tree"' git.c</code> gives the line <code>{ "merge-tree", cmd_merge_tree, RUN_SETUP },</code>.</p></details>
+  </div>
+  <label class="mark"><input type="checkbox" id="done-l0"> I've done level 0</label>
+</section>
+
+<!-- 1 -->
+<section class="level" id="l1" data-title="Headers">
+  <div class="eyebrow">Level 1 <span class="where">repository.h · merge-blobs.c</span></div>
+  <h2>Headers, declarations and #include</h2>
+  <p>C code is split in two. A <b>header</b> (<code>.h</code>) <i>declares</i> what exists: “there is a function called this, with these argument types”. A <b>source file</b> (<code>.c</code>) <i>defines</i> it: the actual code. Other files <code>#include</code> the header to use it.</p>
+<div class="grid2">
+<div><div class="file">merge-blobs.h (declaration)</div>
+<pre><code><span class="k">void</span> *merge_blobs(<span class="k">struct</span> index_state *,
+		  <span class="k">const char</span> *,
+		  <span class="k">struct</span> blob *, <span class="k">struct</span> blob *,
+		  <span class="k">struct</span> blob *, <span class="k">size_t</span> *);</code></pre></div>
+<div><div class="file">merge-blobs.c (definition)</div>
+<pre><code><span class="k">void</span> *merge_blobs(<span class="k">struct</span> index_state *istate,
+		  <span class="k">const char</span> *path, …)
+{
+	<span class="c">/* the real code */</span>
+}</code></pre></div>
+</div>
+  <h3>Include guards</h3>
+<div class="file">repository.h</div>
+<pre><code><span class="k">#ifndef</span> REPOSITORY_H
+<span class="k">#define</span> REPOSITORY_H
+…
+<span class="k">#endif</span></code></pre>
+  <p><code>#include</code> literally pastes the file in. The guard makes sure that if a header is included twice, its contents only count once.</p>
+  <h3>Forward declarations</h3>
+<div class="file">repository.h</div>
+<pre><code><span class="k">struct</span> index_state;
+<span class="k">struct</span> object_database;</code></pre>
+  <p>This says “a struct with this name exists” without saying what's inside. That's enough to use a <i>pointer</i> to it (Level 3). It keeps headers from including each other in a huge web.</p>
+  <h3>Git's include rule</h3>
+  <p>Every <code>.c</code> file includes <code>git-compat-util.h</code> first. Then it includes exactly the headers it uses. A real patch removing <code>the_repository</code> from <code>merge-blobs.c</code> had to add <code>#include "repository.h"</code> and <code>#include "read-cache-ll.h"</code>, because the code now looked inside <code>struct repository</code> and <code>struct index_state</code> directly.</p>
+  <div class="ex"><div class="lbl">Exercise</div>
+    <p>Split your <code>hello.c</code> into <code>area.h</code> (declaration with a guard), <code>area.c</code> (definition) and <code>main.c</code>. Compile with <code>cc -Wall -o hello main.c area.c</code>.</p>
+    <details><summary>Answer</summary>
+<pre><code><span class="c">/* area.h */</span>
+<span class="k">#ifndef</span> AREA_H
+<span class="k">#define</span> AREA_H
+<span class="k">int</span> area(<span class="k">int</span> width, <span class="k">int</span> height);
+<span class="k">#endif</span></code></pre>
+<p><code>area.c</code> includes <code>"area.h"</code> and defines the function (without <code>static</code>, so other files can see it). <code>main.c</code> includes <code>"area.h"</code> and calls it.</p></details>
+  </div>
+  <label class="mark"><input type="checkbox" id="done-l1"> I've done level 1</label>
+</section>
+
+<!-- 2 -->
+<section class="level" id="l2" data-title="Structs &amp; enums">
+  <div class="eyebrow">Level 2 <span class="where">repository.h · repo-settings.h</span></div>
+  <h2>Structs, enums and initializers</h2>
+  <p>A <b>struct</b> groups named fields into one value. It's the closest thing C has to an object.</p>
+<div class="file">repo-settings.h (shortened)</div>
+<pre><code><span class="k">struct</span> repo_settings {
+	<span class="k">int</span> initialized;
+	<span class="k">int</span> core_commit_graph;
+	<span class="k">int</span> index_version;
+	<span class="k">enum</span> untracked_cache_setting core_untracked_cache;
+	<span class="k">size_t</span> delta_base_cache_limit;
+	<span class="k">char</span> *hooks_path;
+};</code></pre>
+  <p>An <b>enum</b> gives names to a set of integer values:</p>
+<div class="file">repository.h</div>
+<pre><code><span class="k">enum</span> ref_storage_format {
+	REF_STORAGE_FORMAT_UNKNOWN,     <span class="c">/* 0 */</span>
+	REF_STORAGE_FORMAT_FILES,       <span class="c">/* 1 */</span>
+	REF_STORAGE_FORMAT_REFTABLE,    <span class="c">/* 2 */</span>
+};</code></pre>
+  <h3>Designated initializers and <code>_INIT</code> macros</h3>
+<div class="file">repo-settings.h</div>
+<pre><code><span class="k">#define</span> REPO_SETTINGS_INIT { \
+	.shared_repository = -1, \
+	.index_version = -1, \
+	.core_untracked_cache = UNTRACKED_CACHE_KEEP, \
+	… \
+}</code></pre>
+  <p><code>.field = value</code> sets fields by name; anything not mentioned becomes 0. Git defines a <code>FOO_INIT</code> macro for most structs, so you write <code>struct strbuf sb = STRBUF_INIT;</code> and get a correctly set-up value. You'll use this pattern constantly.</p>
+  <div class="ex"><div class="lbl">Exercise</div>
+    <p>Define <code>struct window { int x, y, width, height; };</code>, a <code>WINDOW_INIT</code> macro that sets width and height to 1, and print one created with it.</p>
+    <details><summary>Answer</summary>
+<pre><code><span class="k">#define</span> WINDOW_INIT { .width = 1, .height = 1 }
+<span class="k">struct</span> window w = WINDOW_INIT;
+printf(<span class="s">"%d %d %d %d\n"</span>, w.x, w.y, w.width, w.height);   <span class="c">/* 0 0 1 1 */</span></code></pre></details>
+  </div>
+  <label class="mark"><input type="checkbox" id="done-l2"> I've done level 2</label>
+</section>
+
+<!-- 3 -->
+<section class="level" id="l3" data-title="Pointers">
+  <div class="eyebrow">Level 3 <span class="where">merge-blobs.c</span></div>
+  <h2>Pointers: the one idea you must get</h2>
+  <p>A <b>pointer</b> is a variable that holds the <i>address</i> of something else. Almost every function in Git takes pointers.</p>
+  <div class="tbl"><table>
+    <tr><th>Syntax</th><th>Meaning</th></tr>
+    <tr><td><code>struct repository *r</code></td><td><code>r</code> holds the address of a repository</td></tr>
+    <tr><td><code>&amp;x</code></td><td>“the address of <code>x</code>”</td></tr>
+    <tr><td><code>*p</code></td><td>“the thing <code>p</code> points at”</td></tr>
+    <tr><td><code>p-&gt;field</code></td><td>A field of the struct <code>p</code> points at; same as <code>(*p).field</code></td></tr>
+    <tr><td><code>NULL</code></td><td>A pointer to nothing. Using it crashes the program.</td></tr>
+  </table></div>
+  <h3>Following a chain</h3>
+<div class="file">merge-blobs.c</div>
+<pre><code>buf = odb_read_object(istate-&gt;repo-&gt;objects, &amp;obj-&gt;object.oid,
+		      &amp;type, &amp;size);</code></pre>
+  <p>Read it left to right: from the index (<code>istate</code>), go to its repository (<code>-&gt;repo</code>), then to that repository's object database (<code>-&gt;objects</code>). <code>struct index_state</code> has a <code>struct repository *repo</code> field (read-cache-ll.h:189), which is why this works.</p>
+  <h3>Out-parameters</h3>
+  <p>A C function can only return one value. To give back more, the caller passes addresses, and the function writes into them. Above, <code>&amp;type</code> and <code>&amp;size</code> let <code>odb_read_object</code> fill in the object's type and size, while the return value is the data itself.</p>
+  <h3>Why pointers matter for global state</h3>
+  <p>The fix for global state is almost always: <b>pass a pointer to the repository as a parameter</b>, instead of reaching for the global <code>the_repository</code>. That's what this real change did:</p>
+<pre><code>-<span class="k">static int</span> fill_mmfile_blob(mmfile_t *f, <span class="k">struct</span> blob *obj)
++<span class="k">static int</span> fill_mmfile_blob(<span class="k">struct</span> repository *r, mmfile_t *f,
++			    <span class="k">struct</span> blob *obj)
+ …
+-	buf = odb_read_object(the_repository-&gt;objects, &amp;obj-&gt;object.oid,
++	buf = odb_read_object(r-&gt;objects, &amp;obj-&gt;object.oid,</code></pre>
+  <div class="ex"><div class="lbl">Exercise</div>
+    <p>Write <code>void swap(int *a, int *b)</code> that swaps two ints, and call it as <code>swap(&amp;x, &amp;y)</code>. Why can't <code>void swap(int a, int b)</code> work?</p>
+    <details><summary>Answer</summary>
+<pre><code><span class="k">void</span> swap(<span class="k">int</span> *a, <span class="k">int</span> *b)
+{
+	<span class="k">int</span> tmp = *a;
+	*a = *b;
+	*b = tmp;
+}</code></pre>
+<p>C passes copies of arguments. With plain <code>int</code>s, the function swaps its own copies, and the caller's variables don't change. Passing addresses lets it change the originals.</p></details>
+  </div>
+  <label class="mark"><input type="checkbox" id="done-l3"> I've done level 3</label>
+</section>
+
+<!-- 4 -->
+<section class="level" id="l4" data-title="Strings &amp; memory">
+  <div class="eyebrow">Level 4 <span class="where">strbuf.h · banned.h · git-compat-util.h</span></div>
+  <h2>Strings and memory</h2>
+  <p>A C string is a <code>char *</code>: the address of some bytes, ending in a zero byte (<code>'\0'</code>). There's no length stored anywhere and no automatic growth. That's why plain C string code is a common source of bugs.</p>
+  <h3>Heap memory</h3>
+<pre><code><span class="k">char</span> *copy = xstrdup(<span class="s">"hello"</span>);   <span class="c">/* allocate and copy */</span>
+…
+free(copy);                       <span class="c">/* give it back */</span></code></pre>
+  <p>Git wraps <code>malloc</code> in <code>xmalloc</code>, <code>xcalloc</code>, <code>xstrdup</code> and friends. They never return NULL; they stop the program if memory runs out. Use them, not the raw versions.</p>
+  <h3>strbuf: Git's growable string</h3>
+<div class="file">strbuf.h</div>
+<pre><code><span class="k">struct</span> strbuf {
+	<span class="k">size_t</span> alloc;
+	<span class="k">size_t</span> len;
+	<span class="k">char</span> *buf;
+};
+<span class="k">#define</span> STRBUF_INIT  { .buf = strbuf_slopbuf }</code></pre>
+<pre><code><span class="k">struct</span> strbuf sb = STRBUF_INIT;
+strbuf_addstr(&amp;sb, <span class="s">"refs/heads/"</span>);
+strbuf_addf(&amp;sb, <span class="s">"%s"</span>, branch);
+use(sb.buf);
+strbuf_release(&amp;sb);              <span class="c">/* frees the memory */</span></code></pre>
+  <p><code>strbuf</code> tracks the length and grows as needed. Almost all string building in Git goes through it.</p>
+  <h3>Banned functions</h3>
+  <p><code>banned.h</code> makes <code>strcpy</code>, <code>strcat</code>, <code>sprintf</code> and a few others fail to compile, because they can write past the end of a buffer. If you reach for one, use <code>strbuf</code> or <code>xsnprintf</code> instead.</p>
+  <h3>Freeing safely</h3>
+<pre><code><span class="k">#define</span> FREE_AND_NULL(p) <span class="k">do</span> { free(p); (p) = NULL; } <span class="k">while</span> (0)</code></pre>
+  <p>Setting the pointer to NULL after freeing means a second free does nothing, instead of corrupting memory.</p>
+  <div class="ex"><div class="lbl">Exercise</div>
+    <p>In plain C (no Git helpers), what's wrong with this?</p>
+<pre><code><span class="k">char</span> name[8];
+strcpy(name, <span class="s">"refs/heads/main"</span>);</code></pre>
+    <details><summary>Answer</summary><p>The string needs 16 bytes (15 characters plus the zero byte), but <code>name</code> holds 8. <code>strcpy</code> writes past the end and overwrites whatever is next in memory. That's exactly why Git bans it.</p></details>
+  </div>
+  <label class="mark"><input type="checkbox" id="done-l4"> I've done level 4</label>
+</section>
+
+<!-- 5 -->
+<section class="level" id="l5" data-title="Errors &amp; cleanup">
+  <div class="eyebrow">Level 5 <span class="where">usage.c · merge-blobs.c</span></div>
+  <h2>Errors, die() and goto cleanup</h2>
+  <p>C has no exceptions. Git handles errors in two ways:</p>
+  <div class="tbl"><table>
+    <tr><th>Way</th><th>What happens</th><th>When</th></tr>
+    <tr><td><code>return -1;</code> or <code>return error(_("…"));</code></td><td>The function reports failure; the caller decides what to do. <code>error()</code> prints a message and returns -1.</td><td>Library code that callers might recover from</td></tr>
+    <tr><td><code>die(_("…"));</code></td><td>Prints a message and <b>ends the whole process</b></td><td>Commands that can't continue</td></tr>
+  </table></div>
+  <p><code>die</code> is declared <code>NORETURN</code> (git-compat-util.h:419), telling the compiler it never comes back. <code>_("…")</code> marks a message for translation.</p>
+  <p><b>This matters for libification.</b> A library must never kill the program it's running inside. Part of the global-state work is changing library code from <code>die()</code> to returning an error the caller can handle.</p>
+  <h3>goto for cleanup</h3>
+<div class="file">merge-blobs.c (merge_blobs)</div>
+<pre><code><span class="k">if</span> (fill_mmfile_blob(istate-&gt;repo, &amp;f1, our) &lt; 0)
+	<span class="k">goto</span> out_no_mmfile;
+<span class="k">if</span> (fill_mmfile_blob(istate-&gt;repo, &amp;f2, their) &lt; 0)
+	<span class="k">goto</span> out_free_f1;
+…
+out_free_f2_f1:
+	free_mmfile(&amp;f2);
+out_free_f1:
+	free_mmfile(&amp;f1);
+out_no_mmfile:
+	<span class="k">return</span> res;</code></pre>
+  <p><code>goto</code> jumps to a label. In Git it's used for one thing: when something fails halfway, jump to the right point in a list of cleanups so everything allocated so far is freed exactly once. The labels run top to bottom, so jumping to a later label skips cleanups for things not yet allocated.</p>
+  <div class="ex"><div class="lbl">Exercise</div>
+    <p>If the second <code>fill_mmfile_blob</code> fails, which buffers get freed, and why not <code>f2</code>?</p>
+    <details><summary>Answer</summary><p>It jumps to <code>out_free_f1</code>, so only <code>f1</code> is freed with <code>free_mmfile(&amp;f1)</code>. The <code>out_free_f2_f1</code> label above it is skipped. <code>f2</code> was never filled, so there's nothing to free.</p></details>
+  </div>
+  <label class="mark"><input type="checkbox" id="done-l5"> I've done level 5</label>
+</section>
+
+<!-- 6 -->
+<section class="level" id="l6" data-title="The preprocessor">
+  <div class="eyebrow">Level 6 <span class="where">environment.h · repository.h · compat/posix.h</span></div>
+  <h2>The preprocessor and USE_THE_REPOSITORY_VARIABLE</h2>
+  <p>Lines starting with <code>#</code> run <i>before</i> compiling. They paste files, define text replacements, and switch code on and off.</p>
+  <div class="tbl"><table>
+    <tr><th>Directive</th><th>Does</th></tr>
+    <tr><td><code>#include "x.h"</code></td><td>Paste the file in</td></tr>
+    <tr><td><code>#define NAME value</code></td><td>Replace <code>NAME</code> with <code>value</code> everywhere after</td></tr>
+    <tr><td><code>#define F(x) …</code></td><td>A macro that takes arguments, like <code>FREE_AND_NULL(p)</code></td></tr>
+    <tr><td><code>#ifdef NAME … #endif</code></td><td>Keep the code in between only if <code>NAME</code> is defined</td></tr>
+  </table></div>
+  <h3>The switch at the heart of the project</h3>
+<div class="file">repository.h:228</div>
+<pre><code><span class="k">#ifdef</span> USE_THE_REPOSITORY_VARIABLE
+<span class="k">extern struct</span> repository *the_repository;
+<span class="k">#endif</span></code></pre>
+  <p>A file can only <i>see</i> <code>the_repository</code> if it defines <code>USE_THE_REPOSITORY_VARIABLE</code> at the very top, before any include. <code>environment.h</code> hides its remaining global config variables behind the same switch. So:</p>
+  <ul>
+    <li>A file with <code>#define USE_THE_REPOSITORY_VARIABLE</code> still depends on global state.</li>
+    <li>When you remove that line and the file still compiles, the file is free of it. The compiler proves it for you.</li>
+  </ul>
+<pre><code>git grep -l "^#define USE_THE_REPOSITORY_VARIABLE" -- "*.c" | wc -l</code></pre>
+  <p>When this guide was written, that printed 247 files, 108 of them outside <code>builtin/</code> and <code>t/</code>. Each one is a possible piece of work. The number shrinks as people send patches.</p>
+  <h3>Other macros you'll meet</h3>
+  <ul>
+    <li><code>UNUSED</code>: marks a parameter the function ignores, to silence a warning. <code>cmd_hash_object(…, struct repository *repo UNUSED)</code> takes a repository but doesn't use it yet.</li>
+    <li><code>ARRAY_SIZE(x)</code>: the number of elements in a fixed array.</li>
+    <li><code>do { … } while (0)</code>: wraps a multi-statement macro so it behaves like one statement after an <code>if</code>.</li>
+  </ul>
+  <div class="ex"><div class="lbl">Exercise</div>
+    <p>In a scratch copy of Git, delete the <code>#define USE_THE_REPOSITORY_VARIABLE</code> line from <code>prune-packed.c</code> and run <code>make prune-packed.o</code>. Read the errors. Then put the line back.</p>
+    <details><summary>Answer</summary><p>You get errors like “use of undeclared identifier 'the_repository'” at each place the file uses it. That list is exactly the work needed to free the file from the global.</p></details>
+  </div>
+  <label class="mark"><input type="checkbox" id="done-l6"> I've done level 6</label>
+</section>
+
+<!-- 7 -->
+<section class="level" id="l7" data-title="Scope &amp; globals">
+  <div class="eyebrow">Level 7 <span class="where">repository.c · prune-packed.c · environment.c</span></div>
+  <h2>Scope, static and global variables</h2>
+  <div class="tbl"><table>
+    <tr><th>Where it's declared</th><th>Lives</th><th>Visible to</th></tr>
+    <tr><td>Inside a function</td><td>Until the function returns</td><td>That function</td></tr>
+    <tr><td><code>static</code> inside a function</td><td>The whole program run</td><td>That function (keeps its value between calls)</td></tr>
+    <tr><td><code>static</code> at file level</td><td>The whole program run</td><td>That <code>.c</code> file only</td></tr>
+    <tr><td>File level, not <code>static</code></td><td>The whole program run</td><td>Any file that declares it <code>extern</code></td></tr>
+  </table></div>
+  <p>The last two rows are <b>global state</b>: one copy for the whole process.</p>
+  <h3>How the_repository is made</h3>
+<div class="file">repository.c:30</div>
+<pre><code><span class="c">/* The main repository */</span>
+<span class="k">static struct</span> repository the_repo;
+<span class="k">struct</span> repository *the_repository = &amp;the_repo;</code></pre>
+  <p>One struct, private to this file, and one global pointer to it that any file can use through the <code>extern</code> declaration from Level 6.</p>
+  <h3>Why globals are a problem</h3>
+  <ul>
+    <li><b>Hidden inputs.</b> You can't tell from a function's parameters which repository it works on. It might quietly use the global.</li>
+    <li><b>Only one repository.</b> A program that wants to work with two repositories at once (a submodule, or a server hosting thousands) can't, because the global points at just one.</li>
+    <li><b>Threads.</b> Two threads changing the same global can corrupt it.</li>
+  </ul>
+  <h3>A small real example</h3>
+<div class="file">prune-packed.c</div>
+<pre><code><span class="k">static struct</span> progress *progress;            <span class="c">/* file-level global */</span>
+
+<span class="k">static int</span> prune_object(<span class="k">const struct</span> object_id *oid, <span class="k">const char</span> *path,
+			 <span class="k">void</span> *data)
+{
+	…
+	<span class="k">if</span> (!has_object_pack(the_repository, oid))   <span class="c">/* the global repository */</span>
+		<span class="k">return</span> 0;
+	…
+}</code></pre>
+  <div class="ex"><div class="lbl">Exercise</div>
+    <p>Read all of <code>prune-packed.c</code> (it's about 50 lines). List every use of global state. Then find who calls <code>prune_packed_objects()</code> with <code>git grep</code>, and check whether those callers already have a repository they could pass in.</p>
+    <details><summary>Hint</summary><p>There are three uses of <code>the_repository</code> and one file-level <code>static</code>. The interesting question is the callers: if they already hold a <code>struct repository *</code>, the change could follow the same pattern as Level 3. Work it out yourself, and check the mailing list archive first in case someone is already doing it.</p></details>
+  </div>
+  <label class="mark"><input type="checkbox" id="done-l7"> I've done level 7</label>
+</section>
+
+<!-- 8 -->
+<section class="level" id="l8" data-title="Callbacks">
+  <div class="eyebrow">Level 8 <span class="where">prune-packed.c</span></div>
+  <h2>Function pointers, callbacks and void *data</h2>
+  <p>In C you can pass a function to another function. Git uses this for “do something for each X” loops:</p>
+<div class="file">prune-packed.c</div>
+<pre><code>for_each_loose_file_in_source(the_repository-&gt;objects-&gt;sources,
+			      prune_object, NULL, prune_subdir, &amp;opts);</code></pre>
+  <p><code>prune_object</code> and <code>prune_subdir</code> are passed without <code>()</code>, so they aren't called here; their addresses are handed over, and the loop calls them for each file and folder.</p>
+  <h3>The <code>void *data</code> trick</h3>
+<pre><code><span class="k">static int</span> prune_object(<span class="k">const struct</span> object_id *oid, <span class="k">const char</span> *path,
+			 <span class="k">void</span> *data)
+{
+	<span class="k">int</span> *opts = data;      <span class="c">/* we know it's really an int * */</span>
+	…
+}</code></pre>
+  <p>The loop doesn't know what extra information your callback needs, so it carries a <code>void *</code>, a pointer to anything. You pass <code>&amp;opts</code> in, and the callback turns it back into the right type.</p>
+  <p>This is also how callbacks can get a repository without using the global: pack the repository into a small struct, and pass that struct as <code>data</code>. You'll see this pattern in many global-state patches.</p>
+  <div class="ex"><div class="lbl">Exercise</div>
+    <p>Write <code>void for_each_int(int *xs, int n, void (*fn)(int, void *), void *data)</code> and use it to sum an array into an <code>int</code> passed through <code>data</code>.</p>
+    <details><summary>Answer</summary>
+<pre><code><span class="k">static void</span> add_one(<span class="k">int</span> x, <span class="k">void</span> *data)
+{
+	<span class="k">int</span> *sum = data;
+	*sum += x;
+}
+…
+<span class="k">int</span> sum = 0;
+for_each_int(xs, 3, add_one, &amp;sum);</code></pre></details>
+  </div>
+  <label class="mark"><input type="checkbox" id="done-l8"> I've done level 8</label>
+</section>
+
+<!-- 9 -->
+<section class="level" id="l9" data-title="Builtins">
+  <div class="eyebrow">Level 9 <span class="where">git.c · builtin/*.c</span></div>
+  <h2>How a command runs</h2>
+<div class="file">git.c</div>
+<pre><code>{ <span class="s">"merge-tree"</span>, cmd_merge_tree, RUN_SETUP },</code></pre>
+  <p>A table maps each command name to a function and some flags. <code>RUN_SETUP</code> means “find the repository first”. <code>run_builtin()</code> (git.c:470) then does roughly this:</p>
+<pre><code><span class="k">if</span> (run_setup &amp; RUN_SETUP) {
+	prefix = setup_git_directory(the_repository);
+	no_repo = 0;
+}
+…
+status = p-&gt;fn(argc, argv, prefix, no_repo ? NULL : repo);</code></pre>
+  <p>Every builtin has the same signature:</p>
+<div class="file">builtin/hash-object.c</div>
+<pre><code><span class="k">int</span> cmd_hash_object(<span class="k">int</span> argc,
+		    <span class="k">const char</span> **argv,
+		    <span class="k">const char</span> *prefix,
+		    <span class="k">struct</span> repository *repo UNUSED)</code></pre>
+  <ul>
+    <li><code>argc</code> and <code>argv</code>: the number of words on the command line and the words themselves. <code>const char **</code> is a pointer to a list of strings.</li>
+    <li><code>prefix</code>: where you ran the command, relative to the top of the work tree.</li>
+    <li><code>repo</code>: the repository, passed explicitly. It's NULL when there's no repository.</li>
+  </ul>
+  <p>So builtins <i>already receive</i> the repository. A lot of the global-state work is threading this <code>repo</code> parameter down into the functions the builtin calls, so they stop using <code>the_repository</code>. Options are read with the parse-options API (<code>parse-options.h</code>), which is another Outreachy project's topic.</p>
+  <label class="mark"><input type="checkbox" id="done-l9"> I've done level 9</label>
+</section>
+
+<!-- 10 -->
+<section class="level" id="l10" data-title="Removing global state">
+  <div class="eyebrow">Level 10 <span class="where">the project itself</span></div>
+  <h2>Patterns for removing global state</h2>
+  <p>Read past patches before writing your own. Find them with:</p>
+<pre><code>git log --oneline --grep="the_repository" | head -30</code></pre>
+  <p>You'll see subjects like “refspec: stop depending on `the_repository`”, “copy: drop dependency on `the_repository`” and “refs: remove remaining uses of `the_repository`”. Read the full messages and diffs with <code>git show &lt;hash&gt;</code>. Most follow one of these patterns:</p>
+  <h3>Pattern 1: pass the repository in</h3>
+  <p>Add a <code>struct repository *r</code> parameter, use <code>r</code> instead of the global, and update every caller. If a caller already has a repository (a parameter, <code>istate-&gt;repo</code>, a field of some struct), use that. This is what the merge-blobs example in Level 3 does.</p>
+  <h3>Pattern 2: move global config into the repository</h3>
+  <p>Old code kept settings in globals filled from config. Newer code keeps them in <code>struct repo_settings</code> or <code>struct repo_config_values</code> and reads them through a function that takes the repository:</p>
+<div class="file">environment.c</div>
+<pre><code><span class="k">int</span> repo_trust_executable_bit(<span class="k">struct</span> repository *repo)
+{
+	<span class="k">return</span> repo-&gt;initialized
+		? repo_config_values(repo)-&gt;trust_executable_bit
+		: 1;
+}</code></pre>
+  <p>Notice the fallback: if the repository isn't set up yet, it returns the default (1). Edge cases like this are what reviewers look for.</p>
+  <h3>Pattern 3: replace die() with a returned error</h3>
+  <p>Where library code calls <code>die()</code>, change it to <code>return error(…)</code> and make callers handle the failure. Callers in <code>builtin/</code> can still die if that's right for the command.</p>
+  <h3>How to keep it reviewable</h3>
+  <ul>
+    <li>One small, focused change per commit. Changing a function's signature and updating its callers is one commit; a separate cleanup is another.</li>
+    <li>No change in behaviour. Say so in the commit message, and prove it: the existing tests must still pass.</li>
+    <li>Check lore before you start, in case someone is already working on the same file.</li>
+  </ul>
+  <label class="mark"><input type="checkbox" id="done-l10"> I've done level 10</label>
+</section>
+
+<!-- 11 -->
+<section class="level" id="l11" data-title="Shell tests">
+  <div class="eyebrow">Level 11 <span class="where">t/</span></div>
+  <h2>Reading and running Git's tests</h2>
+<div class="file">t/t0001-init.sh</div>
+<pre><code><span class="k">#!/bin/sh</span>
+
+test_description=<span class="s">'git init'</span>
+
+. ./test-lib.sh
+
+test_expect_success <span class="s">'plain'</span> <span class="s">'
+	git init plain &amp;&amp;
+	check_config plain/.git false unset
+'</span></code></pre>
+  <ul>
+    <li><code>. ./test-lib.sh</code> loads the test framework.</li>
+    <li><code>test_expect_success 'name' '…commands…'</code> runs the commands and passes if they all succeed.</li>
+    <li>Commands are joined with <code>&amp;&amp;</code> so that one failure fails the test. A missing <code>&amp;&amp;</code> silently hides failures, and Git checks for that.</li>
+    <li>Helpers like <code>test_cmp expect actual</code>, <code>test_path_is_file</code> and <code>test_must_fail git …</code> do the checking.</li>
+  </ul>
+<pre><code>cd t
+./t0001-init.sh -v -i       <span class="c"># -v verbose, -i stop at first failure</span>
+./t0001-init.sh -x          <span class="c"># show every shell command as it runs</span>
+make test                   <span class="c"># everything (slow)</span></code></pre>
+  <p>Refactoring patches usually add no tests; the existing ones prove nothing changed. Find which tests cover your file: <code>git grep -l "merge-tree" t/</code>.</p>
+  <label class="mark"><input type="checkbox" id="done-l11"> I've done level 11</label>
+</section>
+
+<!-- 12 -->
+<section class="level" id="l12" data-title="Sending a patch">
+  <div class="eyebrow">Level 12 <span class="where">Documentation/SubmittingPatches</span></div>
+  <h2>From commit to the mailing list</h2>
+  <p>Git doesn't use pull requests. Patches go to <code>git@vger.kernel.org</code> as plain-text emails, and review happens by reply.</p>
+  <h3>The commit message</h3>
+<pre><code>merge-blobs: stop using the_repository
+
+merge_blobs() already has the repository through istate.
+Pass it to fill_mmfile_blob() and use it when reading objects.
+
+Remove the USE_THE_REPOSITORY_VARIABLE definition and
+include the headers needed for the structure definitions.
+
+Signed-off-by: Your Name &lt;you@example.com&gt;</code></pre>
+  <ul>
+    <li><b>Subject:</b> <code>area: what changes</code>, lowercase after the colon, no full stop, under about 50 characters.</li>
+    <li><b>Body:</b> explain <i>why</i>, in the present tense, as orders to the code (“Pass it…”, “Remove…”). Wrap at about 72 characters.</li>
+    <li><b>Signed-off-by:</b> added with <code>git commit -s</code>. It certifies you wrote the change and may submit it (the Developer's Certificate of Origin).</li>
+  </ul>
+  <h3>Sending</h3>
+<pre><code>git format-patch -1 -o outgoing/                    <span class="c"># one commit → one email file</span>
+git send-email --dry-run --to=git@vger.kernel.org outgoing/*
+git send-email --to=git@vger.kernel.org outgoing/*  <span class="c"># for real</span></code></pre>
+  <p>Always do the dry run first and read what will be sent. Put mentors on Cc as the project asks.</p>
+  <h3>After sending</h3>
+  <ul>
+    <li>Find your email on <a href="https://lore.kernel.org/git/">lore.kernel.org/git</a> and watch for replies.</li>
+    <li>Reply inline, below the text you're answering. Thank reviewers, and explain or fix every point.</li>
+    <li>Send a new version with <code>git format-patch -v2</code>. Say what changed since v1 (the cover letter or below the <code>---</code> line), and <code>git range-diff</code> shows the difference.</li>
+    <li>The maintainer's “What's cooking” emails show where accepted patches are: seen, next, then master.</li>
+  </ul>
+  <label class="mark"><input type="checkbox" id="done-l12"> I've done level 12</label>
+</section>
+
+<!-- trace -->
+<section class="level" id="trace" data-n="★" data-title="Full trace">
+  <div class="eyebrow">Hero <span class="where">every level in one path</span></div>
+  <h2>Trace a repository from the command line to merge_blobs</h2>
+  <p>Open the files side by side and follow the repository as it travels.</p>
+  <ol class="trace">
+    <li>You type <code>git merge-tree …</code>. <code>main</code> in <code>git.c</code> finds <code>{ "merge-tree", cmd_merge_tree, RUN_SETUP }</code> in the command table (L0, L9).</li>
+    <li><code>run_builtin()</code> sees <code>RUN_SETUP</code> and calls <code>setup_git_directory(the_repository)</code>, which fills in the global struct from <code>repository.c</code> (L7).</li>
+    <li>It calls the builtin through a function pointer: <code>p-&gt;fn(argc, argv, prefix, repo)</code> (L8, L9).</li>
+    <li>Inside <code>builtin/merge-tree.c</code>, which still defines <code>USE_THE_REPOSITORY_VARIABLE</code> (L6), the code calls <code>merge_blobs(the_repository-&gt;index, path, base, our, their, size)</code> (builtin/merge-tree.c:95).</li>
+    <li><code>merge_blobs()</code> (merge-blobs.c:63) gets the index as <code>struct index_state *istate</code>, a pointer (L3).</li>
+    <li>It reaches the repository through <code>istate-&gt;repo</code> and passes it to <code>fill_mmfile_blob(istate-&gt;repo, &amp;f1, our)</code>; the <code>&amp;f1</code> is an out-parameter (L3).</li>
+    <li><code>fill_mmfile_blob</code> reads the object with <code>odb_read_object(r-&gt;objects, …)</code>. If that fails it returns -1, and the caller jumps to its cleanup label (L5).</li>
+  </ol>
+  <p>Notice where the global still appears: in step 4. A natural follow-up is making <code>builtin/merge-tree.c</code> use the <code>repo</code> it was given in step 3. If you can explain every step of this list without looking, you're ready to read and write global-state patches.</p>
+</section>
+
+<!-- next -->
+<section class="level" id="next" data-n="→" data-title="What next">
+  <div class="eyebrow">After this</div>
+  <h2>Where to go from here</h2>
+  <ul>
+    <li><b>Git's own documents:</b> <code>Documentation/MyFirstContribution.adoc</code>, <code>Documentation/SubmittingPatches</code> and <code>CodingGuidelines</code>, plus <a href="https://git.github.io/General-Microproject-Information/">General Microproject Information</a> and <a href="https://git.github.io/Hacking-Git/">Hacking Git</a>.</li>
+    <li><b>C itself:</b> <i>The C Programming Language</i> by Kernighan and Ritchie is short and still the best introduction. <i>Modern C</i> by Jens Gustedt is free online.</li>
+    <li><b>Shell:</b> read <code>t/README</code>, which documents every test helper.</li>
+    <li><b>Read patches every day:</b> pick one thread on lore that touches <code>the_repository</code> and read it from v1 to the final version. You'll learn what reviewers care about faster than any other way.</li>
+  </ul>
+</section>
+
+<!-- glossary -->
+<section class="level" id="glossary" data-n="G" data-title="Glossary">
+  <div class="eyebrow">Reference</div>
+  <h2>Glossary</h2>
+  <div class="tbl"><table>
+    <tr><th>Term</th><th>Meaning</th><th>Level</th></tr>
+    <tr><td>Compiler</td><td>Turns <code>.c</code> files into a program (gcc, clang)</td><td>A, C</td></tr>
+    <tr><td>Header / source</td><td><code>.h</code> declares, <code>.c</code> defines</td><td>1</td></tr>
+    <tr><td>Declaration / definition</td><td>“This exists” versus “here it is”</td><td>1</td></tr>
+    <tr><td>Include guard</td><td><code>#ifndef X_H / #define X_H / #endif</code></td><td>1</td></tr>
+    <tr><td>Forward declaration</td><td><code>struct foo;</code> with no body; enough for pointers</td><td>1</td></tr>
+    <tr><td>Struct</td><td>A group of named fields</td><td>2</td></tr>
+    <tr><td>Enum</td><td>Named integer constants</td><td>2</td></tr>
+    <tr><td>Designated initializer</td><td><code>{ .field = value }</code></td><td>2</td></tr>
+    <tr><td>Pointer</td><td>A variable holding an address; <code>*</code>, <code>&amp;</code>, <code>-&gt;</code></td><td>3</td></tr>
+    <tr><td>NULL</td><td>A pointer to nothing</td><td>3</td></tr>
+    <tr><td>Out-parameter</td><td>A pointer argument the function writes a result into</td><td>3</td></tr>
+    <tr><td>Heap, malloc, free</td><td>Memory you ask for and must give back</td><td>4</td></tr>
+    <tr><td>strbuf</td><td>Git's growable string</td><td>4</td></tr>
+    <tr><td>Memory leak</td><td>Memory that's never freed</td><td>4</td></tr>
+    <tr><td><code>die()</code> / <code>error()</code></td><td>End the process / print and return -1</td><td>5</td></tr>
+    <tr><td>Preprocessor, macro</td><td><code>#</code> lines run before compiling; text replacement</td><td>6</td></tr>
+    <tr><td><code>USE_THE_REPOSITORY_VARIABLE</code></td><td>The switch that makes <code>the_repository</code> visible in a file</td><td>6</td></tr>
+    <tr><td><code>static</code></td><td>At file level: private to the file. In a function: keeps its value.</td><td>7</td></tr>
+    <tr><td><code>extern</code></td><td>Declares a global defined in another file</td><td>7</td></tr>
+    <tr><td>Global state</td><td>Data reachable from anywhere, one copy per process</td><td>7</td></tr>
+    <tr><td>Function pointer, callback</td><td>Passing a function for another to call</td><td>8</td></tr>
+    <tr><td><code>void *</code></td><td>A pointer to anything; used for callback data</td><td>8</td></tr>
+    <tr><td>Builtin, <code>cmd_*</code></td><td>A command's C function</td><td>9</td></tr>
+    <tr><td><code>the_repository</code></td><td>The global pointer to the current repository</td><td>D, 7</td></tr>
+    <tr><td><code>repo_settings</code>, <code>repo_config_values</code></td><td>Per-repository homes for settings that used to be globals</td><td>10</td></tr>
+    <tr><td>Libification</td><td>Making Git's code usable as a library</td><td>D, 10</td></tr>
+    <tr><td><code>test_expect_success</code></td><td>Defines one shell test</td><td>11</td></tr>
+    <tr><td>Signed-off-by, DCO</td><td>Your certification that you may submit the patch</td><td>12</td></tr>
+    <tr><td>lore</td><td>The public mailing-list archive</td><td>12</td></tr>
+    <tr><td>range-diff</td><td>Shows what changed between two versions of a series</td><td>12</td></tr>
+  </table></div>
+</section>
+
+</main>
+</div>
+
+<script>
+(function(){
+  var sections=[].slice.call(document.querySelectorAll('section.level'));
+  var rail=document.getElementById('rail');
+  sections.forEach(function(s){
+    var a=document.createElement('a'); a.href='#'+s.id; a.id='nav-'+s.id;
+    var n=document.createElement('span'); n.className='n';
+    n.textContent=s.getAttribute('data-n')||(/^l\d+$/.test(s.id)?s.id.slice(1):'•');
+    var t=document.createElement('span'); t.innerHTML=s.getAttribute('data-title');
+    a.appendChild(n); a.appendChild(t); rail.appendChild(a);
+  });
+  var boxes=[].slice.call(document.querySelectorAll('.mark input'));
+  document.getElementById('total').textContent=boxes.length;
+  var saved={};
+  try{saved=JSON.parse(localStorage.getItem('git-c-progress')||'{}')}catch(e){}
+  function refresh(){
+    var c=0;
+    boxes.forEach(function(b){
+      var id=b.id.replace('done-',''); var link=document.getElementById('nav-'+id);
+      if(b.checked)c++; if(link)link.classList.toggle('done',b.checked);
+    });
+    document.getElementById('count').textContent=c;
+  }
+  boxes.forEach(function(b){
+    b.checked=!!saved[b.id];
+    b.addEventListener('change',function(){
+      saved[b.id]=b.checked;
+      try{localStorage.setItem('git-c-progress',JSON.stringify(saved))}catch(e){}
+      refresh();
+    });
+  });
+  refresh();
+})();
+</script>
+</body>
+</html>
