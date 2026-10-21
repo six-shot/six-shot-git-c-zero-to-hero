@@ -83,6 +83,13 @@ a{color:var(--accent)}
 .play-buttons button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 .play pre.out{min-height:2.4em;white-space:pre-wrap}
 .play pre.out.pass{outline:3px solid var(--ink)}
+
+.cmd{position:relative}
+.copy-btn{position:absolute;top:6px;right:6px;font:600 12px var(--body);padding:3px 9px;border-radius:5px;border:1px solid var(--code-fg);background:var(--code-bg);color:var(--code-fg);cursor:pointer;opacity:.85}
+.copy-btn:focus-visible{outline:2px solid var(--code-fg)}
+.see-lbl{font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:10px}
+pre.see{background:var(--bg);color:var(--ink);border:1px dashed var(--line);margin-top:4px}
+.note{border-left:3px solid var(--ink);padding:8px 14px;margin:14px 0;background:var(--accent-soft)}
 </style>
 </head>
 <body>
@@ -149,23 +156,43 @@ a{color:var(--accent)}
 
 <!-- B -->
 <section class="level" id="sb" data-n="B" data-title="Set up">
-  <div class="eyebrow">Start here · B <span class="where">compiler · git.git · make</span></div>
-  <h2>Set up a compiler and build Git</h2>
-<pre><code><span class="c"># macOS: installs clang, make and friends</span>
-xcode-select --install
-<span class="c"># Debian/Ubuntu</span>
-sudo apt install build-essential libssl-dev libcurl4-openssl-dev libexpat1-dev gettext zlib1g-dev
+  <div class="eyebrow">Start here · B <span class="where">macOS · Linux · Windows (WSL)</span></div>
+  <h2>Set up a compiler and get Git's source</h2>
+  <p>You need a terminal, a C compiler, <code>make</code>, and a few libraries. Pick your system. Every package list below comes from a real source: Git's own <code>INSTALL</code> file and the packages Git's CI installs on Ubuntu every day (<a href="https://github.com/git/git/blob/v2.56.0/ci/install-dependencies.sh#L61">ci/install-dependencies.sh:61</a>).</p>
+  <p>Only want to practise C? Skip this: the practice boxes in levels C–8 run in your browser.</p>
 
-<span class="c"># Get Git's source and build it</span>
-git clone https://git.kernel.org/pub/scm/git/git.git
-cd git
-make -j8 DEVELOPER=1          <span class="c"># DEVELOPER=1 turns on strict warnings</span>
+  <h3>Windows: use WSL (recommended)</h3>
+  <p>WSL (Windows Subsystem for Linux) gives you a real Ubuntu inside Windows. The Outreachy page for Git says Windows users should be able to install a Linux virtual machine or WSL. These steps are from <a href="https://learn.microsoft.com/en-us/windows/wsl/install">Microsoft's WSL guide</a>:</p>
+  <ol>
+    <li>You need Windows 10 version 2004 or later (build 19041+), or Windows 11.</li>
+    <li>Right-click <b>PowerShell</b> → <b>Run as administrator</b>, and run:
+<pre class="cmd"><code>wsl --install</code></pre>
+    This installs WSL with the <b>Ubuntu</b> distribution.</li>
+    <li><b>Restart</b> your computer.</li>
+    <li>Open <b>Ubuntu</b> from the Start menu. The first time, it unpacks files, then asks you to create a Linux <b>username and password</b> (this password is what <code>sudo</code> asks for later).</li>
+    <li>From now on, type every command in this guide into that <b>Ubuntu</b> window, and follow the Linux steps below.</li>
+  </ol>
+  <div class="note"><b>Keep Git's source inside Linux.</b> Microsoft recommends storing project files in the Linux file system (<code>/home/&lt;you&gt;/…</code>), not on the Windows drive (<code>/mnt/c/…</code>), for speed. Building and testing Git touches thousands of files, so this matters. Run <code>cd ~</code> before cloning.</div>
+  <p><i>Prefer native Windows?</i> Git for Windows maintains its own build environment, the <a href="https://gitforwindows.org/">Git for Windows SDK</a>. It's a different setup from this guide; WSL is the simpler path for contributing to git.git.</p>
 
-<span class="c"># Run one test script</span>
-cd t
-./t0001-init.sh -v            <span class="c"># -v shows each test's output</span></code></pre>
-  <p>The build drops a <code>git</code> binary in the top folder. Run <code>./git version</code> to check it's yours and not the system one. Leave the full test suite (<code>make test</code>) for later; it takes a while.</p>
-  <p>For your editor, use one that can jump to a function's definition (VS Code with the C/C++ extension, or clangd). You'll do it hundreds of times a day. From the terminal, <code>git grep -n name</code> finds anything quickly.</p>
+  <h3>Linux (Ubuntu, Debian) and WSL</h3>
+<pre class="cmd"><code>sudo apt-get update</code></pre>
+<pre class="cmd"><code>sudo apt-get install make gcc gettext zlib1g-dev libssl-dev libcurl4-openssl-dev libexpat-dev git git-email gdb</code></pre>
+  <ul>
+    <li><code>make gcc gettext zlib1g-dev libssl-dev libcurl4-openssl-dev libexpat-dev</code>: what Git's CI installs to build Git. Git's <code>INSTALL</code> says zlib is the one library Git <i>won't build without</i>.</li>
+    <li><code>git-email</code>: on Debian and Ubuntu, <code>git send-email</code> is a separate package (Debian describes it as Git's "email add-on"). You need it in Lab 3.</li>
+    <li><code>gdb</code>: the GNU Debugger, for the debugging lab.</li>
+  </ul>
+
+  <h3>macOS</h3>
+<pre class="cmd"><code>xcode-select --install</code></pre>
+  <p>This installs Apple's command-line tools: <code>clang</code> (the C compiler), <code>make</code>, <code>git</code> and the <code>lldb</code> debugger.</p>
+
+  <h3>About Rust (all systems)</h3>
+  <p>Git v2.56.0 builds some code in Rust <b>by default</b>, and that needs Rust's <code>cargo</code> tool. Git's <a href="https://github.com/git/git/blob/v2.56.0/Makefile#L495">Makefile</a> says: Rust is still optional for now, define <code>NO_RUST</code> to leave it out, and with Git 3.0 Rust will always be enabled. As a beginner, simply add <code>NO_RUST=1</code> to your <code>make</code> commands (Lab 1 shows how). If you want Rust later, install <code>cargo</code> (on Ubuntu it's the <code>cargo</code> package, which Git's CI also installs).</p>
+
+  <h3>Your editor</h3>
+  <p>Use one that can jump to a function's definition (VS Code with the C/C++ extension, or clangd). On WSL, VS Code can open your Linux folder directly: type <code>code .</code> in the Ubuntu window. From the terminal, <code>git grep -n name</code> finds anything quickly.</p>
   <label class="mark"><input type="checkbox" id="done-sb"> I've done B</label>
 </section>
 
@@ -362,6 +389,55 @@ git blame -L 60,90 merge-blobs.c             <span class="c"># who wrote each li
     <details><summary>Answer</summary><p><code>git grep -n "^int cmd_merge_tree"</code> gives <code>builtin/merge-tree.c</code>. <code>git grep -n '"merge-tree"' git.c</code> gives the line <code>{ "merge-tree", cmd_merge_tree, RUN_SETUP },</code>.</p></details>
   </div>
   <label class="mark"><input type="checkbox" id="done-l0"> I've done level 0</label>
+</section>
+
+<!-- lab-build -->
+<section class="level" id="lab-build" data-n="L1" data-title="Lab: build Git, run a test">
+  <div class="eyebrow">Lab 1 <span class="where">your terminal · about 15 minutes</span></div>
+  <h2>Build Git and run one of its tests</h2>
+  <p>This is the first real step every contributor takes. Each output below was produced by actually running the command on Git v2.56.0.</p>
+  <h3>1. Get the source, pinned to v2.56.0</h3>
+<pre class="cmd"><code>cd ~</code></pre>
+<pre class="cmd"><code>git clone https://github.com/git/git.git</code></pre>
+<pre class="cmd"><code>cd git &amp;&amp; git switch --detach v2.56.0</code></pre>
+  <p>Git's own tutorial clones from this GitHub mirror too (<a href="https://github.com/git/git/blob/v2.56.0/Documentation/MyFirstContribution.adoc#L75">MyFirstContribution.adoc:75</a>). <code>--detach</code> means "look at this release without making a branch", which is fine for learning.</p>
+  <h3>2. Build it</h3>
+<pre class="cmd"><code>make -j4 NO_RUST=1</code></pre>
+  <p><code>-j4</code> builds 4 files at once (use the number of CPU cores you have). <code>NO_RUST=1</code> skips the Rust parts (see section B). It takes a few minutes. Lines scroll past, like <code>CC object-file.o</code>; that's normal.</p>
+<div class="see-lbl">What you should see</div>
+<pre class="see"><code>    ...
+    SUBDIR templates</code></pre>
+  <p>If something failed, the last lines contain the word <code>error</code>. The most common cause is a missing library, so re-run the install command from section B.</p>
+  <h3>3. Check you're running <i>your</i> Git</h3>
+<pre class="cmd"><code>./git version</code></pre>
+<div class="see-lbl">What you should see</div>
+<pre class="see"><code>git version 2.56.0</code></pre>
+  <p>The <code>./</code> matters: it runs the Git you just built in this folder, not the one installed on your system.</p>
+  <h3>4. Run one test script</h3>
+<pre class="cmd"><code>cd t &amp;&amp; ./t0001-init.sh</code></pre>
+<div class="see-lbl">What you should see</div>
+<pre class="see"><code>ok 1 - plain
+ok 2 - plain nested in bare
+...
+ok 103 - init honors GIT_OBJECT_DIRECTORY
+# passed all 103 test(s)
+1..103</code></pre>
+  <p>Each <code>ok</code> line is one test. The last two lines are the summary.</p>
+  <h3>5. Look inside a test</h3>
+<pre class="cmd"><code>./t0001-init.sh --run=1 -v</code></pre>
+<div class="see-lbl">What you should see</div>
+<pre class="see"><code>expecting success of 0001.1 &#x27;plain&#x27;:
+	git init plain &amp;&amp;
+	check_config plain/.git false unset
+
+Initialized empty Git repository in .../t/trash directory.t0001-init/plain/.git/
+ok 1 - plain</code></pre>
+  <p><code>--run=1</code> runs only test 1 (the rest show as <code>skip</code>), and <code>-v</code> ("verbose") shows the commands and their output. Every test works inside a temporary <b>trash directory</b>, so it can't damage your real files. These options are documented in <a href="https://github.com/git/git/blob/v2.56.0/t/README#L77">t/README</a>: <code>-v</code>, <code>-i</code> (stop at the first failure), <code>-x</code> (show every shell command), <code>-d</code> (keep the trash directory).</p>
+  <div class="ex"><div class="lbl">Exercise</div>
+    <p>Run <code>./t0001-init.sh --run=2 -v</code>. What is test 2 called, and which git command does it start with?</p>
+    <details><summary>Answer</summary><p>"plain nested in bare". It starts by running <code>git init --bare bare-ancestor.git</code>.</p></details>
+  </div>
+  <label class="mark"><input type="checkbox" id="done-lab-build"> I've done Lab 1</label>
 </section>
 
 <!-- 1 -->
@@ -1346,6 +1422,170 @@ status = p-&gt;fn(argc, argv, prefix, no_repo ? NULL : repo);</code></pre>
   <label class="mark"><input type="checkbox" id="done-l9"> I've done level 9</label>
 </section>
 
+<!-- lab-debug -->
+<section class="level" id="lab-debug" data-n="L2" data-title="Lab: debugging">
+  <div class="eyebrow">Lab 2 <span class="where">browser + your terminal</span></div>
+  <h2>Debugging: sanitizers and a debugger</h2>
+  <p>Sooner or later your change will crash or leak memory. Git's developers use two kinds of tools for this, and so will you.</p>
+
+  <h3>Part 1: sanitizers catch memory bugs for you</h3>
+  <p>A <b>sanitizer</b> is a compiler option that adds checks to your program. <b>AddressSanitizer</b> stops the program the moment it touches memory it shouldn't, and <b>LeakSanitizer</b> reports memory that was never freed. Try both in your browser first:</p>
+  <div class="play" id="play-dbg-overflow" data-expect="last: 20" data-flags="-g -fsanitize=address -fno-omit-frame-pointer" data-exit0="1">
+    <div class="lbl">Practice in your browser · debugging 1 of 2</div>
+    <h3>Find a buffer overflow with AddressSanitizer</h3>
+    <p>This program writes one element past the end of its array. Press <b>▶ Run</b> and read the report: it names the bug (<code>heap-buffer-overflow</code>) and the exact line. Then fix the loop so <b>Check</b> passes with no report.</p>
+    <p class="expect-line"><b>Expected output when fixed:</b></p>
+<pre class="expect"><code>last: 20</code></pre>
+    <textarea class="code" spellcheck="false" autocapitalize="off" autocomplete="off" rows="17" aria-label="C code for Find a buffer overflow with AddressSanitizer">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+int main(void)
+{
+	int count = 3;
+	int *nums = malloc(count * sizeof(int));
+
+	if (!nums)
+		return 1;
+	for (int i = 0; i &lt;= count; i++) /* TODO: one step too far */
+		nums[i] = i * 10;
+	printf(&quot;last: %d\n&quot;, nums[count - 1]);
+	free(nums);
+	return 0;
+}
+</textarea>
+    <textarea class="starter" hidden>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+int main(void)
+{
+	int count = 3;
+	int *nums = malloc(count * sizeof(int));
+
+	if (!nums)
+		return 1;
+	for (int i = 0; i &lt;= count; i++) /* TODO: one step too far */
+		nums[i] = i * 10;
+	printf(&quot;last: %d\n&quot;, nums[count - 1]);
+	free(nums);
+	return 0;
+}
+</textarea>
+    <div class="play-buttons">
+      <button type="button" class="run">▶ Run</button>
+      <button type="button" class="check">✓ Check my answer</button>
+      <button type="button" class="reset">Reset</button>
+    </div>
+    <pre class="out" aria-live="polite"><code>Press Run to compile this program with AddressSanitizer turned on.</code></pre>
+    <details><summary>Show a solution</summary>
+<pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+int main(void)
+{
+	int count = 3;
+	int *nums = malloc(count * sizeof(int));
+
+	if (!nums)
+		return 1;
+	for (int i = 0; i &lt; count; i++)
+		nums[i] = i * 10;
+	printf(&quot;last: %d\n&quot;, nums[count - 1]);
+	free(nums);
+	return 0;
+}
+</code></pre></details>
+  </div>
+
+  <div class="play" id="play-dbg-leak" data-expect="branch: refs/heads/main" data-flags="-g -fsanitize=address -fno-omit-frame-pointer" data-exit0="1">
+    <div class="lbl">Practice in your browser · debugging 2 of 2</div>
+    <h3>Find a memory leak with LeakSanitizer</h3>
+    <p>This program forgets to give memory back. Press <b>▶ Run</b>: instead of the branch name you get a report that says <code>LeakSanitizer: detected memory leaks</code> and shows the line where the memory was allocated. Fix it so the program prints the branch and exits cleanly (exit code 0).</p>
+    <p class="expect-line"><b>Expected output when fixed:</b></p>
+<pre class="expect"><code>branch: refs/heads/main</code></pre>
+    <textarea class="code" spellcheck="false" autocapitalize="off" autocomplete="off" rows="15" aria-label="C code for Find a memory leak with LeakSanitizer">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+int main(void)
+{
+	char *copy = strdup(&quot;refs/heads/main&quot;);
+
+	if (!copy)
+		return 1;
+	printf(&quot;branch: %s\n&quot;, copy);
+	/* TODO: something is missing here */
+	return 0;
+}
+</textarea>
+    <textarea class="starter" hidden>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+int main(void)
+{
+	char *copy = strdup(&quot;refs/heads/main&quot;);
+
+	if (!copy)
+		return 1;
+	printf(&quot;branch: %s\n&quot;, copy);
+	/* TODO: something is missing here */
+	return 0;
+}
+</textarea>
+    <div class="play-buttons">
+      <button type="button" class="run">▶ Run</button>
+      <button type="button" class="check">✓ Check my answer</button>
+      <button type="button" class="reset">Reset</button>
+    </div>
+    <pre class="out" aria-live="polite"><code>Press Run to compile this program with AddressSanitizer turned on.</code></pre>
+    <details><summary>Show a solution</summary>
+<pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+int main(void)
+{
+	char *copy = strdup(&quot;refs/heads/main&quot;);
+
+	if (!copy)
+		return 1;
+	printf(&quot;branch: %s\n&quot;, copy);
+	free(copy);
+	return 0;
+}
+</code></pre></details>
+  </div>
+
+
+  <h3>Part 2: build Git with a sanitizer</h3>
+  <p>Git's Makefile has a <code>SANITIZE</code> option (<a href="https://github.com/git/git/blob/v2.56.0/Makefile#L1618">Makefile:1618</a>), and Git's CI uses it in two jobs: <code>linux-leaks</code> runs with <code>SANITIZE=leak</code>, and <code>linux-asan-ubsan</code> with <code>SANITIZE=address,undefined</code> (<a href="https://github.com/git/git/blob/v2.56.0/ci/lib.sh#L380">ci/lib.sh:380</a>). If your patch leaks memory, those CI jobs will catch it, so it's better to catch it first yourself.</p>
+<pre class="cmd"><code>make -j4 NO_RUST=1 SANITIZE=address</code></pre>
+<pre class="cmd"><code>cd t &amp;&amp; ./t0001-init.sh</code></pre>
+<div class="see-lbl">What you should see</div>
+<pre class="see"><code># passed all 103 test(s)
+1..103</code></pre>
+  <div class="note"><b>On a Mac:</b> <code>SANITIZE=address</code> works, but <code>SANITIZE=leak</code> doesn't. Apple's clang refuses it (<code>unsupported option '-fsanitize=leak' for target 'arm64-apple-darwin…'</code>). Use Linux or WSL for leak checks, which is also where Git's CI runs them.</div>
+  <p>A sanitizer build is slower, so build normally again afterwards: <code>make -j4 NO_RUST=1</code>.</p>
+
+  <h3>Part 3: stop Git in a debugger</h3>
+  <p>A debugger lets you pause a running program, look at its variables, and see which functions called which. By default Git is built with optimization (<code>CFLAGS = -g -O2 -Wall</code>, <a href="https://github.com/git/git/blob/v2.56.0/Makefile#L978">Makefile:978</a>), which makes variables hard to inspect. Rebuild without optimization first:</p>
+<pre class="cmd"><code>make -j4 NO_RUST=1 CFLAGS=&quot;-g -O0 -Wall&quot;</code></pre>
+  <p><b>On Linux and WSL, use gdb.</b> Git's own test wrapper starts gdb as <code>gdb --args ./git …</code> (see <code>bin-wrappers/git</code> after you build):</p>
+<pre class="cmd"><code>gdb --args ./git version</code></pre>
+  <p>Then, at the <code>(gdb)</code> prompt, type <code>break cmd_version</code>, then <code>run</code>, then <code>bt</code> (backtrace), then <code>quit</code>.</p>
+  <p><b>On macOS, use lldb:</b></p>
+<pre class="cmd"><code>lldb -- ./git version</code></pre>
+  <p>At the <code>(lldb)</code> prompt: <code>breakpoint set -n cmd_version</code>, then <code>run</code>, then <code>bt</code>, then <code>quit</code>. Here's real lldb output from Git v2.56.0:</p>
+<div class="see-lbl">What you should see</div>
+<pre class="see"><code>* thread #1, queue = &#x27;com.apple.main-thread&#x27;, stop reason = breakpoint 1.1
+  * frame #0: git`cmd_version(argc=1, argv=..., prefix=0x0000000000000000, ...) at help.c:835:16
+    frame #1: git`run_builtin(p=..., argc=1, argv=..., repo=...) at git.c:510:11
+    frame #2: git`handle_builtin(args=...) at git.c:786:9</code></pre>
+  <p>Read the backtrace from the bottom up: <code>handle_builtin</code> called <code>run_builtin</code> (the line from Level 9: <code>status = p-&gt;fn(…)</code> at <a href="https://github.com/git/git/blob/v2.56.0/git.c#L510">git.c:510</a>), which called <code>cmd_version</code> (<a href="https://github.com/git/git/blob/v2.56.0/help.c#L833">help.c:833</a>). That's how you find out how Git reached any line of code.</p>
+  <p><b>Inside a test script,</b> <code>t/README</code> documents the <code>debug</code> helper: put <code>debug</code> in front of a git command in a test (for example <code>debug git init plain</code>) to run that command under gdb. Use <code>debug -d "lldb --" git init plain</code> to pick lldb instead. Also <code>test_pause</code> stops a test and opens a shell in its trash directory. Remove both before sending a patch (<a href="https://github.com/git/git/blob/v2.56.0/t/README#L909">t/README:909</a>, <a href="https://github.com/git/git/blob/v2.56.0/t/README#L1143">t/README:1143</a>).</p>
+  <label class="mark"><input type="checkbox" id="done-lab-debug"> I've done Lab 2</label>
+</section>
+
 <!-- 10 -->
 <section class="level" id="l10" data-title="Removing global state">
   <div class="eyebrow">Level 10 <span class="where">the project itself</span></div>
@@ -1405,6 +1645,62 @@ make test                   <span class="c"># everything (slow)</span></code></p
   <label class="mark"><input type="checkbox" id="done-l11"> I've done level 11</label>
 </section>
 
+<!-- lab-test -->
+<section class="level" id="lab-test" data-n="L3" data-title="Lab: write a test">
+  <div class="eyebrow">Lab 3 <span class="where">your terminal · needs Lab 1</span></div>
+  <h2>Write your first Git test</h2>
+  <p>Many patches need a test. Here you'll add one, watch it fail, then make it pass. Do this in the Git folder from Lab 1, on a practice branch:</p>
+<pre class="cmd"><code>cd ~/git &amp;&amp; git switch -c practice-first-test</code></pre>
+  <h3>1. Add the test</h3>
+  <p>Open <code>t/t0001-init.sh</code> in your editor. Scroll to the very end: the last line is <code>test_done</code>. Add this <b>just above</b> it (indent with a <b>tab</b>):</p>
+<pre class="cmd"><code>test_expect_success 'init creates HEAD' '
+	git init head-check &amp;&amp;
+	test_path_is_file head-check/.git/HEAD
+'
+</code></pre>
+  <ul>
+    <li><code>test_expect_success 'name' '…'</code> defines one test, which passes if every command succeeds.</li>
+    <li>The commands are joined with <code>&amp;&amp;</code>, so any failure fails the test.</li>
+    <li><code>test_path_is_file</code> is a helper from <a href="https://github.com/git/git/blob/v2.56.0/t/README#L1080">t/README:1080</a>. Unlike plain <code>test -f</code>, it prints a message when it fails.</li>
+  </ul>
+  <h3>2. Run just your test</h3>
+<pre class="cmd"><code>cd t &amp;&amp; ./t0001-init.sh --run=104 -v</code></pre>
+<div class="see-lbl">What you should see</div>
+<pre class="see"><code>...
+ok 103 # skip init honors GIT_OBJECT_DIRECTORY (--run)
+
+expecting success of 0001.104 &#x27;init creates HEAD&#x27;:
+	git init head-check &amp;&amp;
+	test_path_is_file head-check/.git/HEAD
+
+Initialized empty Git repository in .../trash directory.t0001-init/head-check/.git/
+ok 104 - init creates HEAD
+
+# passed all 104 test(s)
+1..104</code></pre>
+  <p>Your test is number 104, because t0001 already has 103.</p>
+  <h3>3. Break it on purpose</h3>
+  <p>Change <code>HEAD</code> to <code>HEADD</code> in your test and run it again with <code>-v -i</code>:</p>
+<pre class="cmd"><code>./t0001-init.sh --run=104 -v -i</code></pre>
+<div class="see-lbl">What you should see</div>
+<pre class="see"><code>...
+Initialized empty Git repository in .../trash directory.t0001-init/head-check/.git/
+File head-check/.git/HEADD doesn&#x27;t exist
+not ok 104 - init creates HEAD
+#
+#		git init head-check &amp;&amp;
+#		test_path_is_file head-check/.git/HEADD
+#</code></pre>
+  <p>That first line is the helper telling you exactly what was wrong. Learning to read failures like this is most of the work. Change it back to <code>HEAD</code> and run the whole file: it should say <code>passed all 104</code>.</p>
+  <h3>4. Commit it (practice only)</h3>
+  <p>Git needs to know who you are, once:</p>
+<pre class="cmd"><code>git config --global user.name &quot;Your Name&quot;</code></pre>
+<pre class="cmd"><code>git config --global user.email &quot;you@example.com&quot;</code></pre>
+<pre class="cmd"><code>cd .. &amp;&amp; git add t/t0001-init.sh &amp;&amp; git commit -s -m &quot;t0001: check that init creates HEAD&quot;</code></pre>
+  <p>This is a practice commit only: don't send it to the list. Lab 4 uses it to practise sending, safely.</p>
+  <label class="mark"><input type="checkbox" id="done-lab-test"> I've done Lab 3</label>
+</section>
+
 <!-- 12 -->
 <section class="level" id="l12" data-title="Sending a patch">
   <div class="eyebrow">Level 12 <span class="where">Documentation/SubmittingPatches</span></div>
@@ -1443,6 +1739,47 @@ git send-email --to=git@vger.kernel.org outgoing/*  <span class="c"># for real</
     <li>The maintainer's “What's cooking” emails show where accepted patches are: seen, next, then master.</li>
   </ul>
   <label class="mark"><input type="checkbox" id="done-l12"> I've done level 12</label>
+</section>
+
+<!-- lab-send -->
+<section class="level" id="lab-send" data-n="L4" data-title="Lab: practise sending">
+  <div class="eyebrow">Lab 4 <span class="where">your terminal · needs Lab 3</span></div>
+  <h2>Practise sending a patch, safely</h2>
+  <p>Sending your first email to the Git list is scary. Here you go through every step without anything leaving your computer, using the practice commit from Lab 3.</p>
+  <h3>1. Turn the commit into a patch file</h3>
+<pre class="cmd"><code>git format-patch -1 -o ~/outgoing</code></pre>
+<div class="see-lbl">What you should see</div>
+<pre class="see"><code>/home/you/outgoing/0001-t0001-check-that-init-creates-HEAD.patch</code></pre>
+  <p>Open that file in your editor. It's a plain email: <code>From:</code>, <code>Subject: [PATCH] …</code>, your message, a <code>---</code> line, then the diff. Anything you write between <code>---</code> and the diff is seen by reviewers but not saved in history. That's where "Changes since v1" notes go.</p>
+  <h3>2. Dry run: see exactly what would be sent</h3>
+<pre class="cmd"><code>git send-email --dry-run --to=you@example.com ~/outgoing/*.patch</code></pre>
+  <p><code>--dry-run</code> does everything except send, so it's safe even before you've set up email. Here's real output from a fresh setup with no email settings:</p>
+<div class="see-lbl">What you should see</div>
+<pre class="see"><code>Dry-OK. Log says:
+...
+From: Your Name &lt;you@example.com&gt;
+To: you@example.com
+Subject: [PATCH] t0001: check that init creates HEAD
+...
+Result: OK</code></pre>
+  <p>Check three things every time: <b>To</b> (the list: <code>git@vger.kernel.org</code>), <b>Cc</b> (the people who should see it), and <b>Subject</b>. On Linux/WSL, if Git says <code>send-email</code> is not a git command, install the <code>git-email</code> package (section B).</p>
+  <h3>3. Before the real thing: set up email</h3>
+  <p>Git's own <code>send-email</code> documentation has a "Use Gmail as the SMTP Server" example (<a href="https://github.com/git/git/blob/v2.56.0/Documentation/git-send-email.adoc#L571">git-send-email.adoc:571</a>). Put this in <code>~/.gitconfig</code>:</p>
+<pre class="cmd"><code>[sendemail]
+	smtpEncryption = ssl
+	smtpServer = smtp.gmail.com
+	smtpUser = yourname@gmail.com
+	smtpServerPort = 465
+</code></pre>
+  <p>The same page notes Gmail doesn't accept your normal password here: you need an <b>app password</b> (with two-factor sign-in turned on) or OAuth. The list also drops HTML email, so use <code>git send-email</code> rather than pasting into a mail app.</p>
+  <h3>4. Practise for real, to yourself only</h3>
+  <p>Once email is set up, send the practice patch <b>to your own address</b> (not the list), and open it in your inbox to see what reviewers will see:</p>
+<pre class="cmd"><code>git send-email --to=you@example.com ~/outgoing/*.patch</code></pre>
+  <h3>Don't want to set up email?</h3>
+  <p>Git's <code>SubmittingPatches</code> says you can send patches with <b>GitGitGadget</b> or <b>b4</b> instead of <code>send-email</code> (<a href="https://github.com/git/git/blob/v2.56.0/Documentation/SubmittingPatches#L673">SubmittingPatches:673</a>). GitGitGadget turns a GitHub pull request into mailing-list email, which many Windows users find easier.</p>
+  <h3>Clean up</h3>
+<pre class="cmd"><code>git switch --detach v2.56.0 &amp;&amp; git branch -D practice-first-test</code></pre>
+  <label class="mark"><input type="checkbox" id="done-lab-send"> I've done Lab 4</label>
 </section>
 
 <!-- micro -->
@@ -1534,6 +1871,8 @@ git send-email --to=git@vger.kernel.org outgoing/*  <span class="c"># for real</
     <li><b>Shell:</b> read <code>t/README</code>, which documents every test helper.</li>
     <li><b>Read patches every day:</b> pick one thread on lore that touches <code>the_repository</code> and read it from v1 to the final version. You'll learn what reviewers care about faster than any other way.</li>
   </ul>
+  <h3>Help make this guide better</h3>
+  <p>Every fact here is meant to come from Git's own code and documentation, pinned to v2.56.0, but no guide is perfect. If something is wrong, out of date, or confusing, <a href="https://github.com/six-shot/six-shot-git-c-zero-to-hero/issues">open an issue</a>. Corrections from experienced Git contributors are especially welcome.</p>
 </section>
 
 <!-- glossary -->
@@ -1618,11 +1957,11 @@ git send-email --to=git@vger.kernel.org outgoing/*  <span class="c"># for real</
   var API='https://godbolt.org/api/compiler/cg142/compile';
   function key(id){return 'git-c-play-'+id;}
   function setOut(pre,text,pass){pre.querySelector('code').textContent=text;pre.classList.toggle('pass',!!pass);}
-  function clean(t){return t.replace(/\x1b\[[0-9;]*[mK]/g,'').replace(/<source>/g,'program.c');}
-  function compile(src){
+  function clean(t){return t.replace(/\x1b\[[0-9;]*[mK]/g,'').replace(/<source>|\/app\/example\.c|example\.c/g,'program.c');}
+  function compile(src,flags){
     return fetch(API,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},
       body:JSON.stringify({source:src,compiler:'cg142',lang:'c',allowStoreCodeDebug:false,
-        options:{userArguments:'-Wall -std=gnu99 -fdiagnostics-color=never',
+        options:{userArguments:'-Wall -std=gnu99 -fdiagnostics-color=never'+(flags?' '+flags:''),
           executeParameters:{args:[],stdin:''},compilerOptions:{executorRequest:true},
           filters:{execute:true},tools:[],libraries:[]}})})
     .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();});
@@ -1641,7 +1980,7 @@ git send-email --to=git@vger.kernel.org outgoing/*  <span class="c"># for real</
     function go(check){
       btns.forEach(function(b){b.disabled=true;});
       setOut(out,'Compiling with gcc 14.2 and running…');
-      compile(ta.value).then(function(r){
+      compile(ta.value,box.getAttribute('data-flags')).then(function(r){
         var build=r.buildResult||{}, errs=clean(text(build.stderr)), so=text(r.stdout), se=clean(text(r.stderr));
         if(build.code!==0&&build.code!==undefined){setOut(out,'Compile error (fix the first one, then Run again):\n\n'+errs);return;}
         var msg=(errs?'Compiler warnings:\n'+errs+'\n\n':'')+'Program output:\n'+(so||'(nothing printed)')+(se?'\n'+se:'')+'\n\n[exit code '+r.code+']';
@@ -1649,7 +1988,8 @@ git send-email --to=git@vger.kernel.org outgoing/*  <span class="c"># for real</
         var forbid=box.getAttribute('data-forbid');
         if(forbid&&new RegExp(forbid,'m').test(ta.value)){setOut(out,'Not yet. '+box.getAttribute('data-forbid-msg').replace(/<[^>]+>/g,'')+'\n\n'+msg);return;}
         var want=box.getAttribute('data-expect').trim(), got=(so||'').trim();
-        if(got===want)setOut(out,'✓ Correct! Your output matches.\n\n'+msg,true);
+        if(box.getAttribute('data-exit0')&&r.code!==0)setOut(out,'Not yet. The program still reports a problem (exit code '+r.code+').\n\n'+msg);
+        else if(got===want)setOut(out,'✓ Correct! Your output matches.\n\n'+msg,true);
         else setOut(out,'Not yet. The output should be:\n'+want+'\n\n'+msg);
       }).catch(function(){
         setOut(out,"Couldn't reach the online compiler (Compiler Explorer). You can still run it on your own computer:\nsave the code as program.c, then run\n  cc -Wall -o program program.c && ./program");
@@ -1658,6 +1998,21 @@ git send-email --to=git@vger.kernel.org outgoing/*  <span class="c"># for real</
     box.querySelector('.run').addEventListener('click',function(){go(false);});
     box.querySelector('.check').addEventListener('click',function(){go(true);});
     box.querySelector('.reset').addEventListener('click',function(){ta.value=starter;try{localStorage.removeItem(key(box.id));}catch(e){}setOut(out,'Press Run to compile and run this program with gcc.');});
+  });
+})();
+</script>
+
+<script>
+(function(){
+  [].slice.call(document.querySelectorAll('pre.cmd')).forEach(function(pre){
+    var b=document.createElement('button');b.type='button';b.className='copy-btn';b.textContent='Copy';
+    b.addEventListener('click',function(){
+      var t=pre.querySelector('code').textContent.replace(/\n$/,'');
+      var done=function(){b.textContent='Copied';setTimeout(function(){b.textContent='Copy';},1500);};
+      var fallback=function(){var r=document.createRange();r.selectNodeContents(pre.querySelector('code'));var sel=getSelection();sel.removeAllRanges();sel.addRange(r);b.textContent='Selected: press Ctrl/Cmd+C';};
+      try{navigator.clipboard.writeText(t).then(done,fallback);}catch(e){fallback();}
+    });
+    pre.appendChild(b);
   });
 })();
 </script>
