@@ -82,6 +82,7 @@ a{color:var(--accent)}
   <p class="bytes-note">Every Git command is a C function. <a href="#l9">Level 9</a> shows how the command line reaches it.</p>
   <h1>Learn C by reading Git</h1>
   <p class="lede">A zero-to-hero path through the C that Git is written in, aimed at people who want to contribute, especially to the work on reducing Git's global state (<code>the_repository</code>). If you've never written C, start with sections A–D. Every level after that teaches one idea from a real piece of git.git, with a small exercise.</p>
+  <p class="bytes-note">Pinned to <b>Git v2.56.0</b> (released 27 September 2026). Every file and line cited here links to that release, so the examples stay correct as Git moves on. To compare with today's code, run the same <code>git grep</code> on <code>master</code>.</p>
   <p class="progress">Progress: <span id="count">0</span> of <span id="total">0</span> sections marked done (saved in this browser only).</p>
 </header>
 
@@ -249,7 +250,7 @@ cd t
 <section class="level" id="l0" data-title="Map of git.git">
   <div class="eyebrow">Level 0 <span class="where">the top folder</span></div>
   <h2>The map of git.git</h2>
-  <p>Git's source is large (about 640 <code>.c</code> files), but it's laid out simply.</p>
+  <p>Git's source is large (641 <code>.c</code> files in v2.56.0), but it's laid out simply.</p>
   <div class="tbl"><table>
     <tr><th>Where</th><th>What</th></tr>
     <tr><td><code>git.c</code></td><td>The <code>main</code> that reads <code>git &lt;command&gt;</code> and calls the right function</td></tr>
@@ -278,12 +279,12 @@ git blame -L 60,90 merge-blobs.c             <span class="c"># who wrote each li
   <h2>Headers, declarations and #include</h2>
   <p>C code is split in two. A <b>header</b> (<code>.h</code>) <i>declares</i> what exists: “there is a function called this, with these argument types”. A <b>source file</b> (<code>.c</code>) <i>defines</i> it: the actual code. Other files <code>#include</code> the header to use it.</p>
 <div class="grid2">
-<div><div class="file">merge-blobs.h (declaration)</div>
+<div><div class="file"><a href="https://github.com/git/git/blob/v2.56.0/merge-blobs.h#L7">merge-blobs.h:7 (declaration)</a></div>
 <pre><code><span class="k">void</span> *merge_blobs(<span class="k">struct</span> index_state *,
 		  <span class="k">const char</span> *,
 		  <span class="k">struct</span> blob *, <span class="k">struct</span> blob *,
 		  <span class="k">struct</span> blob *, <span class="k">size_t</span> *);</code></pre></div>
-<div><div class="file">merge-blobs.c (definition)</div>
+<div><div class="file"><a href="https://github.com/git/git/blob/v2.56.0/merge-blobs.c#L62">merge-blobs.c:62 (definition)</a></div>
 <pre><code><span class="k">void</span> *merge_blobs(<span class="k">struct</span> index_state *istate,
 		  <span class="k">const char</span> *path, …)
 {
@@ -291,14 +292,14 @@ git blame -L 60,90 merge-blobs.c             <span class="c"># who wrote each li
 }</code></pre></div>
 </div>
   <h3>Include guards</h3>
-<div class="file">repository.h</div>
+<div class="file"><a href="https://github.com/git/git/blob/v2.56.0/repository.h#L1">repository.h:1</a></div>
 <pre><code><span class="k">#ifndef</span> REPOSITORY_H
 <span class="k">#define</span> REPOSITORY_H
 …
 <span class="k">#endif</span></code></pre>
   <p><code>#include</code> literally pastes the file in. The guard makes sure that if a header is included twice, its contents only count once.</p>
   <h3>Forward declarations</h3>
-<div class="file">repository.h</div>
+<div class="file"><a href="https://github.com/git/git/blob/v2.56.0/repository.h#L11">repository.h:11</a></div>
 <pre><code><span class="k">struct</span> index_state;
 <span class="k">struct</span> object_database;</code></pre>
   <p>This says “a struct with this name exists” without saying what's inside. That's enough to use a <i>pointer</i> to it (Level 3). It keeps headers from including each other in a huge web.</p>
@@ -322,7 +323,7 @@ git blame -L 60,90 merge-blobs.c             <span class="c"># who wrote each li
   <div class="eyebrow">Level 2 <span class="where">repository.h · repo-settings.h</span></div>
   <h2>Structs, enums and initializers</h2>
   <p>A <b>struct</b> groups named fields into one value. It's the closest thing C has to an object.</p>
-<div class="file">repo-settings.h (shortened)</div>
+<div class="file"><a href="https://github.com/git/git/blob/v2.56.0/repo-settings.h#L19">repo-settings.h:19 (shortened)</a></div>
 <pre><code><span class="k">struct</span> repo_settings {
 	<span class="k">int</span> initialized;
 	<span class="k">int</span> core_commit_graph;
@@ -332,14 +333,14 @@ git blame -L 60,90 merge-blobs.c             <span class="c"># who wrote each li
 	<span class="k">char</span> *hooks_path;
 };</code></pre>
   <p>An <b>enum</b> gives names to a set of integer values:</p>
-<div class="file">repository.h</div>
+<div class="file"><a href="https://github.com/git/git/blob/v2.56.0/repository.h#L19">repository.h:19</a></div>
 <pre><code><span class="k">enum</span> ref_storage_format {
 	REF_STORAGE_FORMAT_UNKNOWN,     <span class="c">/* 0 */</span>
 	REF_STORAGE_FORMAT_FILES,       <span class="c">/* 1 */</span>
 	REF_STORAGE_FORMAT_REFTABLE,    <span class="c">/* 2 */</span>
 };</code></pre>
   <h3>Designated initializers and <code>_INIT</code> macros</h3>
-<div class="file">repo-settings.h</div>
+<div class="file"><a href="https://github.com/git/git/blob/v2.56.0/repo-settings.h#L67">repo-settings.h:67</a></div>
 <pre><code><span class="k">#define</span> REPO_SETTINGS_INIT { \
 	.shared_repository = -1, \
 	.index_version = -1, \
@@ -371,20 +372,22 @@ printf(<span class="s">"%d %d %d %d\n"</span>, w.x, w.y, w.width, w.height);   <
     <tr><td><code>NULL</code></td><td>A pointer to nothing. Using it crashes the program.</td></tr>
   </table></div>
   <h3>Following a chain</h3>
-<div class="file">merge-blobs.c</div>
-<pre><code>buf = odb_read_object(istate-&gt;repo-&gt;objects, &amp;obj-&gt;object.oid,
-		      &amp;type, &amp;size);</code></pre>
-  <p>Read it left to right: from the index (<code>istate</code>), go to its repository (<code>-&gt;repo</code>), then to that repository's object database (<code>-&gt;objects</code>). <code>struct index_state</code> has a <code>struct repository *repo</code> field (read-cache-ll.h:189), which is why this works.</p>
+<div class="file"><a href="https://github.com/git/git/blob/v2.56.0/attr.c#L782">attr.c:782</a></div>
+<pre><code>buf = odb_read_object(istate-&gt;repo-&gt;objects, &amp;oid, &amp;type, &amp;sz);</code></pre>
+  <p>Read it left to right: from the index (<code>istate</code>), go to its repository (<code>-&gt;repo</code>), then to that repository's object database (<code>-&gt;objects</code>). <code>struct index_state</code> has a <code>struct repository *repo</code> field (<a href="https://github.com/git/git/blob/v2.56.0/read-cache-ll.h#L189">read-cache-ll.h:189</a>), which is why this works.</p>
   <h3>Out-parameters</h3>
-  <p>A C function can only return one value. To give back more, the caller passes addresses, and the function writes into them. Above, <code>&amp;type</code> and <code>&amp;size</code> let <code>odb_read_object</code> fill in the object's type and size, while the return value is the data itself.</p>
+  <p>A C function can only return one value. To give back more, the caller passes addresses, and the function writes into them. Above, <code>&amp;type</code> and <code>&amp;sz</code> let <code>odb_read_object</code> fill in the object's type and size, while the return value is the data itself.</p>
   <h3>Why pointers matter for global state</h3>
-  <p>The fix for global state is almost always: <b>pass a pointer to the repository as a parameter</b>, instead of reaching for the global <code>the_repository</code>. That's what this real change did:</p>
-<pre><code>-<span class="k">static int</span> fill_mmfile_blob(mmfile_t *f, <span class="k">struct</span> blob *obj)
-+<span class="k">static int</span> fill_mmfile_blob(<span class="k">struct</span> repository *r, mmfile_t *f,
-+			    <span class="k">struct</span> blob *obj)
+  <p>The fix for global state is almost always: <b>pass a pointer to the repository as a parameter</b>, instead of reaching for the global <code>the_repository</code>. That's what this merged commit did. <code>preload_index()</code> already receives the index, and the index knows its repository, so <code>index-&gt;repo</code> replaces the global:</p>
+<div class="file"><a href="https://github.com/git/git/commit/1fde1c5daf399bb2d645261e38a7f4b8b1de04c6">commit 1fde1c5daf</a> · preload-index: stop depending on 'the_repository' (2025)</div>
+<pre><code>-#define USE_THE_REPOSITORY_VARIABLE
+ #define DISABLE_SIGN_COMPARE_WARNINGS
  …
--	buf = odb_read_object(the_repository-&gt;objects, &amp;obj-&gt;object.oid,
-+	buf = odb_read_object(r-&gt;objects, &amp;obj-&gt;object.oid,</code></pre>
+-	repo_config_get_bool(the_repository, "core.preloadindex", &amp;core_preload_index);
++	repo_config_get_bool(index-&gt;repo, "core.preloadindex", &amp;core_preload_index);
+ …
+-		pd.progress = start_delayed_progress(the_repository,
++		pd.progress = start_delayed_progress(index-&gt;repo,</code></pre>
   <div class="ex"><div class="lbl">Exercise</div>
     <p>Write <code>void swap(int *a, int *b)</code> that swaps two ints, and call it as <code>swap(&amp;x, &amp;y)</code>. Why can't <code>void swap(int a, int b)</code> work?</p>
     <details><summary>Answer</summary>
@@ -410,7 +413,7 @@ printf(<span class="s">"%d %d %d %d\n"</span>, w.x, w.y, w.width, w.height);   <
 free(copy);                       <span class="c">/* give it back */</span></code></pre>
   <p>Git wraps <code>malloc</code> in <code>xmalloc</code>, <code>xcalloc</code>, <code>xstrdup</code> and friends. They never return NULL; they stop the program if memory runs out. Use them, not the raw versions.</p>
   <h3>strbuf: Git's growable string</h3>
-<div class="file">strbuf.h</div>
+<div class="file"><a href="https://github.com/git/git/blob/v2.56.0/strbuf.h#L74">strbuf.h:74</a></div>
 <pre><code><span class="k">struct</span> strbuf {
 	<span class="k">size_t</span> alloc;
 	<span class="k">size_t</span> len;
@@ -447,13 +450,13 @@ strcpy(name, <span class="s">"refs/heads/main"</span>);</code></pre>
     <tr><td><code>return -1;</code> or <code>return error(_("…"));</code></td><td>The function reports failure; the caller decides what to do. <code>error()</code> prints a message and returns -1.</td><td>Library code that callers might recover from</td></tr>
     <tr><td><code>die(_("…"));</code></td><td>Prints a message and <b>ends the whole process</b></td><td>Commands that can't continue</td></tr>
   </table></div>
-  <p><code>die</code> is declared <code>NORETURN</code> (git-compat-util.h:419), telling the compiler it never comes back. <code>_("…")</code> marks a message for translation.</p>
+  <p><code>die</code> is declared <code>NORETURN</code> (<a href="https://github.com/git/git/blob/v2.56.0/git-compat-util.h#L419">git-compat-util.h:419</a>), telling the compiler it never comes back. <code>_("…")</code> marks a message for translation.</p>
   <p><b>This matters for libification.</b> A library must never kill the program it's running inside. Part of the global-state work is changing library code from <code>die()</code> to returning an error the caller can handle.</p>
   <h3>goto for cleanup</h3>
-<div class="file">merge-blobs.c (merge_blobs)</div>
-<pre><code><span class="k">if</span> (fill_mmfile_blob(istate-&gt;repo, &amp;f1, our) &lt; 0)
+<div class="file"><a href="https://github.com/git/git/blob/v2.56.0/merge-blobs.c#L86">merge-blobs.c:86 (merge_blobs)</a></div>
+<pre><code><span class="k">if</span> (fill_mmfile_blob(&amp;f1, our) &lt; 0)
 	<span class="k">goto</span> out_no_mmfile;
-<span class="k">if</span> (fill_mmfile_blob(istate-&gt;repo, &amp;f2, their) &lt; 0)
+<span class="k">if</span> (fill_mmfile_blob(&amp;f2, their) &lt; 0)
 	<span class="k">goto</span> out_free_f1;
 …
 out_free_f2_f1:
@@ -483,7 +486,7 @@ out_no_mmfile:
     <tr><td><code>#ifdef NAME … #endif</code></td><td>Keep the code in between only if <code>NAME</code> is defined</td></tr>
   </table></div>
   <h3>The switch at the heart of the project</h3>
-<div class="file">repository.h:228</div>
+<div class="file"><a href="https://github.com/git/git/blob/v2.56.0/repository.h#L228">repository.h:228</a></div>
 <pre><code><span class="k">#ifdef</span> USE_THE_REPOSITORY_VARIABLE
 <span class="k">extern struct</span> repository *the_repository;
 <span class="k">#endif</span></code></pre>
@@ -493,7 +496,7 @@ out_no_mmfile:
     <li>When you remove that line and the file still compiles, the file is free of it. The compiler proves it for you.</li>
   </ul>
 <pre><code>git grep -l "^#define USE_THE_REPOSITORY_VARIABLE" -- "*.c" | wc -l</code></pre>
-  <p>When this guide was written, that printed 247 files, 108 of them outside <code>builtin/</code> and <code>t/</code>. Each one is a possible piece of work. The number shrinks as people send patches.</p>
+  <p>In Git v2.56.0 that prints 248 files, 109 of them outside <code>builtin/</code> and <code>t/</code>. Each one is a possible piece of work. The number shrinks as people send patches.</p>
   <h3>Other macros you'll meet</h3>
   <ul>
     <li><code>UNUSED</code>: marks a parameter the function ignores, to silence a warning. <code>cmd_hash_object(…, struct repository *repo UNUSED)</code> takes a repository but doesn't use it yet.</li>
@@ -520,7 +523,7 @@ out_no_mmfile:
   </table></div>
   <p>The last two rows are <b>global state</b>: one copy for the whole process.</p>
   <h3>How the_repository is made</h3>
-<div class="file">repository.c:30</div>
+<div class="file"><a href="https://github.com/git/git/blob/v2.56.0/repository.c#L30">repository.c:30</a></div>
 <pre><code><span class="c">/* The main repository */</span>
 <span class="k">static struct</span> repository the_repo;
 <span class="k">struct</span> repository *the_repository = &amp;the_repo;</code></pre>
@@ -532,7 +535,7 @@ out_no_mmfile:
     <li><b>Threads.</b> Two threads changing the same global can corrupt it.</li>
   </ul>
   <h3>A small real example</h3>
-<div class="file">prune-packed.c</div>
+<div class="file"><a href="https://github.com/git/git/blob/v2.56.0/prune-packed.c#L11">prune-packed.c:11</a></div>
 <pre><code><span class="k">static struct</span> progress *progress;            <span class="c">/* file-level global */</span>
 
 <span class="k">static int</span> prune_object(<span class="k">const struct</span> object_id *oid, <span class="k">const char</span> *path,
@@ -555,7 +558,7 @@ out_no_mmfile:
   <div class="eyebrow">Level 8 <span class="where">prune-packed.c</span></div>
   <h2>Function pointers, callbacks and void *data</h2>
   <p>In C you can pass a function to another function. Git uses this for “do something for each X” loops:</p>
-<div class="file">prune-packed.c</div>
+<div class="file"><a href="https://github.com/git/git/blob/v2.56.0/prune-packed.c#L43">prune-packed.c:43</a></div>
 <pre><code>for_each_loose_file_in_source(the_repository-&gt;objects-&gt;sources,
 			      prune_object, NULL, prune_subdir, &amp;opts);</code></pre>
   <p><code>prune_object</code> and <code>prune_subdir</code> are passed without <code>()</code>, so they aren't called here; their addresses are handed over, and the loop calls them for each file and folder.</p>
@@ -587,9 +590,9 @@ for_each_int(xs, 3, add_one, &amp;sum);</code></pre></details>
 <section class="level" id="l9" data-title="Builtins">
   <div class="eyebrow">Level 9 <span class="where">git.c · builtin/*.c</span></div>
   <h2>How a command runs</h2>
-<div class="file">git.c</div>
+<div class="file"><a href="https://github.com/git/git/blob/v2.56.0/git.c#L617">git.c:617</a></div>
 <pre><code>{ <span class="s">"merge-tree"</span>, cmd_merge_tree, RUN_SETUP },</code></pre>
-  <p>A table maps each command name to a function and some flags. <code>RUN_SETUP</code> means “find the repository first”. <code>run_builtin()</code> (git.c:470) then does roughly this:</p>
+  <p>A table maps each command name to a function and some flags. <code>RUN_SETUP</code> means “find the repository first”. <code>run_builtin()</code> (<a href="https://github.com/git/git/blob/v2.56.0/git.c#L470">git.c:470</a>) then does roughly this:</p>
 <pre><code><span class="k">if</span> (run_setup &amp; RUN_SETUP) {
 	prefix = setup_git_directory(the_repository);
 	no_repo = 0;
@@ -597,7 +600,7 @@ for_each_int(xs, 3, add_one, &amp;sum);</code></pre></details>
 …
 status = p-&gt;fn(argc, argv, prefix, no_repo ? NULL : repo);</code></pre>
   <p>Every builtin has the same signature:</p>
-<div class="file">builtin/hash-object.c</div>
+<div class="file"><a href="https://github.com/git/git/blob/v2.56.0/builtin/hash-object.c#L64">builtin/hash-object.c:64</a></div>
 <pre><code><span class="k">int</span> cmd_hash_object(<span class="k">int</span> argc,
 		    <span class="k">const char</span> **argv,
 		    <span class="k">const char</span> *prefix,
@@ -619,10 +622,10 @@ status = p-&gt;fn(argc, argv, prefix, no_repo ? NULL : repo);</code></pre>
 <pre><code>git log --oneline --grep="the_repository" | head -30</code></pre>
   <p>You'll see subjects like “refspec: stop depending on `the_repository`”, “copy: drop dependency on `the_repository`” and “refs: remove remaining uses of `the_repository`”. Read the full messages and diffs with <code>git show &lt;hash&gt;</code>. Most follow one of these patterns:</p>
   <h3>Pattern 1: pass the repository in</h3>
-  <p>Add a <code>struct repository *r</code> parameter, use <code>r</code> instead of the global, and update every caller. If a caller already has a repository (a parameter, <code>istate-&gt;repo</code>, a field of some struct), use that. This is what the merge-blobs example in Level 3 does.</p>
+  <p>Add a <code>struct repository *r</code> parameter, use <code>r</code> instead of the global, and update every caller. If a caller already has a repository (a parameter, <code>istate-&gt;repo</code>, a field of some struct), use that. This is what the preload-index commit in Level 3 does.</p>
   <h3>Pattern 2: move global config into the repository</h3>
   <p>Old code kept settings in globals filled from config. Newer code keeps them in <code>struct repo_settings</code> or <code>struct repo_config_values</code> and reads them through a function that takes the repository:</p>
-<div class="file">environment.c</div>
+<div class="file"><a href="https://github.com/git/git/blob/v2.56.0/environment.c#L141">environment.c:141</a></div>
 <pre><code><span class="k">int</span> repo_trust_executable_bit(<span class="k">struct</span> repository *repo)
 {
 	<span class="k">return</span> repo-&gt;initialized
@@ -645,7 +648,7 @@ status = p-&gt;fn(argc, argv, prefix, no_repo ? NULL : repo);</code></pre>
 <section class="level" id="l11" data-title="Shell tests">
   <div class="eyebrow">Level 11 <span class="where">t/</span></div>
   <h2>Reading and running Git's tests</h2>
-<div class="file">t/t0001-init.sh</div>
+<div class="file"><a href="https://github.com/git/git/blob/v2.56.0/t/t0001-init.sh#L1">t/t0001-init.sh:1</a></div>
 <pre><code><span class="k">#!/bin/sh</span>
 
 test_description=<span class="s">'git init'</span>
@@ -676,19 +679,24 @@ make test                   <span class="c"># everything (slow)</span></code></p
   <h2>From commit to the mailing list</h2>
   <p>Git doesn't use pull requests. Patches go to <code>git@vger.kernel.org</code> as plain-text emails, and review happens by reply.</p>
   <h3>The commit message</h3>
-<pre><code>merge-blobs: stop using the_repository
+  <p>This is the message of the merged commit from Level 3, exactly as it is in Git's history:</p>
+<div class="file"><a href="https://github.com/git/git/commit/1fde1c5daf399bb2d645261e38a7f4b8b1de04c6">commit 1fde1c5daf</a></div>
+<pre><code>preload-index: stop depending on 'the_repository'
 
-merge_blobs() already has the repository through istate.
-Pass it to fill_mmfile_blob() and use it when reading objects.
+Refactor "preload-index.c" to remove the dependency on the global
+'the_repository'. Replace the occurrences of 'the_repository' with
+'index-&gt;repo' and thus remove the definition '#define
+USE_THE_REPOSITORY_VARIABLE'.
 
-Remove the USE_THE_REPOSITORY_VARIABLE definition and
-include the headers needed for the structure definitions.
-
-Signed-off-by: Your Name &lt;you@example.com&gt;</code></pre>
+Mentored-by: Christian Couder &lt;christian.couder@gmail.com&gt;
+Mentored-by: Ghanshyam Thakkar &lt;shyamthakkar001@gmail.com&gt;
+Signed-off-by: Ayush Chandekar &lt;ayu.chandekar@gmail.com&gt;
+Signed-off-by: Junio C Hamano &lt;gitster@pobox.com&gt;</code></pre>
   <ul>
     <li><b>Subject:</b> <code>area: what changes</code>, lowercase after the colon, no full stop, under about 50 characters.</li>
     <li><b>Body:</b> explain <i>why</i>, in the present tense, as orders to the code (“Pass it…”, “Remove…”). Wrap at about 72 characters.</li>
-    <li><b>Signed-off-by:</b> added with <code>git commit -s</code>. It certifies you wrote the change and may submit it (the Developer's Certificate of Origin).</li>
+    <li><b>Signed-off-by:</b> added with <code>git commit -s</code>. It certifies you wrote the change and may submit it (the Developer's Certificate of Origin, described in <code>Documentation/SubmittingPatches</code>). The second one is the maintainer's, added when he applied the patch.</li>
+    <li><b>Mentored-by:</b> a trailer crediting the mentors who guided the work, common on GSoC and Outreachy patches.</li>
   </ul>
   <h3>Sending</h3>
 <pre><code>git format-patch -1 -o outgoing/                    <span class="c"># one commit → one email file</span>
@@ -705,6 +713,68 @@ git send-email --to=git@vger.kernel.org outgoing/*  <span class="c"># for real</
   <label class="mark"><input type="checkbox" id="done-l12"> I've done level 12</label>
 </section>
 
+<!-- micro -->
+<section class="level" id="micro" data-n="M" data-title="Microproject patterns">
+  <div class="eyebrow">Beyond the levels <span class="where">t/README · CodingGuidelines · po/README.md</span></div>
+  <h2>Microproject patterns in Git's own rules</h2>
+  <p>Git's microprojects are small fixes that bring old code in line with rules Git already documents. Each pattern below comes from one of those documents, with the command that finds the places that don't follow it yet, and a real example line from v2.56.0.</p>
+  <p><b>Before you pick one:</b></p>
+  <ul>
+    <li>The counts are <b>search hits</b>, not confirmed bugs. Read every hit; some are deliberate (for example, <code>t/t0000-basic.sh</code> tests <code>test_must_fail</code> itself).</li>
+    <li>Run the same command on <code>master</code>: someone may already have fixed it since v2.56.0.</li>
+    <li>Search <a href="https://lore.kernel.org/git/">lore.kernel.org/git</a> for the file name. Other applicants may be working on the same file.</li>
+    <li>Git's applicant guide asks for <b>one</b> microproject per applicant: see <a href="https://git.github.io/General-Microproject-Information/">General Microproject Information</a>.</li>
+    <li>Fix one file (or one small group of the same mistake) per patch, and run that file's tests: <code>cd t &amp;&amp; ./t0081-find-pack.sh -v</code>.</li>
+  </ul>
+  <h3>Check files with the test helpers</h3>
+  <p><b>The rule:</b> <a href="https://github.com/git/git/blob/v2.56.0/t/README#L1080">t/README:1080</a>: <code>test_path_is_file</code>, <code>test_path_is_dir</code>, <code>test_path_is_missing</code>.</p>
+  <p>Plain <code>test -f</code> fails silently. The helpers print what was wrong, which makes failures easier to debug.</p>
+<pre><code>git grep -n -E '^[[:space:]]+test -[fde] ' v2.56.0 -- 't/t[0-9]*.sh'</code></pre>
+  <p><b>In v2.56.0:</b> 132 lines in 61 files. For example, <a href="https://github.com/git/git/blob/v2.56.0/t/t0081-find-pack.sh#L35">t/t0081-find-pack.sh:35</a>:</p>
+<pre><code>test -f "$head_commit_pack" &amp;&amp;</code></pre>
+  <h3>Use <code>test_must_fail</code> for git</h3>
+  <p><b>The rule:</b> <a href="https://github.com/git/git/blob/v2.56.0/t/README#L723">t/README:723</a>: don't use <code>! git cmd</code>.</p>
+  <p><code>! git</code> also passes when git crashes (a segfault). <code>test_must_fail</code> only accepts a controlled failure. The same section says <em>not</em> to use it for non-git commands.</p>
+<pre><code>git grep -n -E '^[[:space:]]+! git ' v2.56.0 -- 't/t[0-9]*.sh'</code></pre>
+  <p><b>In v2.56.0:</b> 40 lines in 15 files. For example, <a href="https://github.com/git/git/blob/v2.56.0/t/t1467-refs-rename.sh#L91">t/t1467-refs-rename.sh:91</a>:</p>
+<pre><code>! git refs rename refs/heads/symref refs/heads/renamed 2&gt;err &amp;&amp;</code></pre>
+  <h3>Don't pipe git's output</h3>
+  <p><b>The rule:</b> <a href="https://github.com/git/git/blob/v2.56.0/t/README#L732">t/README:732</a>: don't feed git's output to a pipe.</p>
+  <p>In a pipe, only the last command's exit code counts, so a crashing git goes unnoticed. Write to a file first, then process the file.</p>
+<pre><code>git grep -n -E '^[[:space:]]+git [^|]*[^|]\|[^|]' v2.56.0 -- 't/t[0-9]*.sh'</code></pre>
+  <p><b>In v2.56.0:</b> 375 lines in 113 files. For example, <a href="https://github.com/git/git/blob/v2.56.0/t/t0001-init.sh#L671">t/t0001-init.sh:671</a>:</p>
+<pre><code>git version --build-options | sed -ne "s/^default-ref-format: //p" &gt;expect &amp;&amp;</code></pre>
+  <h3>Split one-line <code>if …; then</code></h3>
+  <p><b>The rule:</b> <a href="https://github.com/git/git/blob/v2.56.0/Documentation/CodingGuidelines#L120">CodingGuidelines:120</a>: <code>then</code> goes on the next line.</p>
+  <p>A pure style fix. Group all the instances in one test file into one patch.</p>
+<pre><code>git grep -n -E '^[[:space:]]+if .*; then[[:space:]]*$' v2.56.0 -- 't/t[0-9]*.sh'</code></pre>
+  <p><b>In v2.56.0:</b> 48 lines in 24 files. For example, <a href="https://github.com/git/git/blob/v2.56.0/t/t0600-reffiles-backend.sh#L322">t/t0600-reffiles-backend.sh:322</a>:</p>
+<pre><code>if test $i = 75; then</code></pre>
+  <h3>Plural messages with <code>Q_()</code></h3>
+  <p><b>The rule:</b> <a href="https://github.com/git/git/blob/v2.56.0/po/README.md#L312">po/README.md:312</a>: <code>Q_("%d commit", "%d commits", n)</code>.</p>
+  <p>With <code>_()</code>, a count of 1 still says "islands". Many hits are fine: already inside a <code>Q_()</code> on the line before, or the number can never be 1. Check each one by hand.</p>
+<pre><code>git grep -n -E '_\("[^"]*%d[^"]* [a-z]+s[ .,]' v2.56.0 -- '*.c'</code></pre>
+  <p><b>In v2.56.0:</b> a few dozen hits; most are <em>not</em> bugs. For example, <a href="https://github.com/git/git/blob/v2.56.0/delta-islands.c#L499">delta-islands.c:499</a>:</p>
+<pre><code>fprintf(stderr, _("Marked %d islands, done.\n"), island_counter);</code></pre>
+  <h3>Stop using <code>the_repository</code></h3>
+  <p><b>The rule:</b> <a href="https://github.com/git/git/blob/v2.56.0/repository.h#L228">repository.h:228</a>: the global is only visible with <code>USE_THE_REPOSITORY_VARIABLE</code>.</p>
+  <p>Levels 6, 7 and 10. Start with small files whose callers already have a repository. Some are much harder than they look.</p>
+<pre><code>git grep -l '^#define USE_THE_REPOSITORY_VARIABLE' v2.56.0 -- '*.c' ':!builtin' ':!t'</code></pre>
+  <p><b>In v2.56.0:</b> 109 library files (101 more in <code>builtin/</code>). For example, <a href="https://github.com/git/git/blob/v2.56.0/prune-packed.c#L1">prune-packed.c:1</a>:</p>
+<pre><code>#define USE_THE_REPOSITORY_VARIABLE</code></pre>
+  <h3>Replace <code>strbuf_split*()</code></h3>
+  <p><b>The rule:</b> <a href="https://github.com/git/git/commit/2ab72a16d9">commit 2ab72a16d9</a>: "gpg-interface: do not use misdesigned strbuf_split*()".</p>
+  <p>These return an array of <code>strbuf</code>s that callers must free one by one. That commit replaced them with <code>string_list_split()</code>; read it before trying another call site.</p>
+<pre><code>git grep -n -E 'strbuf_split(_buf|_str|_max)?\(' v2.56.0 -- '*.c' ':!strbuf.c' ':!t'</code></pre>
+  <p><b>In v2.56.0:</b> 3 calls in 3 files. For example, <a href="https://github.com/git/git/blob/v2.56.0/mailinfo.c#L1105">mailinfo.c:1105</a>:</p>
+<pre><code>lines = strbuf_split(line, '\n');</code></pre>
+  <div class="ex"><div class="lbl">Exercise</div>
+    <p>Run the <code>test -f</code> search on <code>master</code> instead of <code>v2.56.0</code>. Is the count different? Pick one hit, read the whole test it's in, and decide which helper (<code>test_path_is_file</code>, <code>_dir</code> or <code>_missing</code>) matches what the test means.</p>
+    <details><summary>Hint</summary><p>Look at the flag: <code>-f</code> is a file, <code>-d</code> a directory, <code>-e</code> "exists". <code>! test -f x</code> usually means the path must be missing. If the code is inside an <code>if</code> (a condition, not a check), it may be correct as it is.</p></details>
+  </div>
+  <label class="mark"><input type="checkbox" id="done-micro"> I've done the microproject section</label>
+</section>
+
 <!-- trace -->
 <section class="level" id="trace" data-n="★" data-title="Full trace">
   <div class="eyebrow">Hero <span class="where">every level in one path</span></div>
@@ -714,12 +784,12 @@ git send-email --to=git@vger.kernel.org outgoing/*  <span class="c"># for real</
     <li>You type <code>git merge-tree …</code>. <code>main</code> in <code>git.c</code> finds <code>{ "merge-tree", cmd_merge_tree, RUN_SETUP }</code> in the command table (L0, L9).</li>
     <li><code>run_builtin()</code> sees <code>RUN_SETUP</code> and calls <code>setup_git_directory(the_repository)</code>, which fills in the global struct from <code>repository.c</code> (L7).</li>
     <li>It calls the builtin through a function pointer: <code>p-&gt;fn(argc, argv, prefix, repo)</code> (L8, L9).</li>
-    <li>Inside <code>builtin/merge-tree.c</code>, which still defines <code>USE_THE_REPOSITORY_VARIABLE</code> (L6), the code calls <code>merge_blobs(the_repository-&gt;index, path, base, our, their, size)</code> (builtin/merge-tree.c:95).</li>
-    <li><code>merge_blobs()</code> (merge-blobs.c:63) gets the index as <code>struct index_state *istate</code>, a pointer (L3).</li>
-    <li>It reaches the repository through <code>istate-&gt;repo</code> and passes it to <code>fill_mmfile_blob(istate-&gt;repo, &amp;f1, our)</code>; the <code>&amp;f1</code> is an out-parameter (L3).</li>
-    <li><code>fill_mmfile_blob</code> reads the object with <code>odb_read_object(r-&gt;objects, …)</code>. If that fails it returns -1, and the caller jumps to its cleanup label (L5).</li>
+    <li>Inside <code>builtin/merge-tree.c</code>, which still defines <code>USE_THE_REPOSITORY_VARIABLE</code> (L6), the code calls <code>merge_blobs(the_repository-&gt;index, path, base, our, their, size)</code> (<a href="https://github.com/git/git/blob/v2.56.0/builtin/merge-tree.c#L95">builtin/merge-tree.c:95</a>).</li>
+    <li><code>merge_blobs()</code> (<a href="https://github.com/git/git/blob/v2.56.0/merge-blobs.c#L62">merge-blobs.c:62</a>) gets the index as <code>struct index_state *istate</code>, a pointer (L3).</li>
+    <li>It calls <code>fill_mmfile_blob(&amp;f1, our)</code> (<a href="https://github.com/git/git/blob/v2.56.0/merge-blobs.c#L86">merge-blobs.c:86</a>); the <code>&amp;f1</code> is an out-parameter (L3).</li>
+    <li><code>fill_mmfile_blob</code> reads the object with <code>odb_read_object(the_repository-&gt;objects, …)</code> (<a href="https://github.com/git/git/blob/v2.56.0/merge-blobs.c#L15">merge-blobs.c:15</a>), because <code>merge-blobs.c</code> still defines <code>USE_THE_REPOSITORY_VARIABLE</code> in v2.56.0. If the read fails it returns -1, and the caller jumps to its cleanup label (L5).</li>
   </ol>
-  <p>Notice where the global still appears: in step 4. A natural follow-up is making <code>builtin/merge-tree.c</code> use the <code>repo</code> it was given in step 3. If you can explain every step of this list without looking, you're ready to read and write global-state patches.</p>
+  <p>Notice where the global still appears: in steps 4 and 7. Step 7 is library code, and the fix is Pattern 1: <code>merge_blobs()</code> already holds the index, and the index knows its repository (<code>istate-&gt;repo</code>), so that repository can be passed down to <code>fill_mmfile_blob()</code>, exactly like the preload-index commit. Step 4 is different: it's in a builtin, and in step 3 that <code>repo</code> parameter is <code>NULL</code> when there's no repository (<code>no_repo ? NULL : repo</code>, <a href="https://github.com/git/git/blob/v2.56.0/git.c#L510">git.c:510</a>). So global-state work usually targets library files first. If you can explain every step of this list without looking, you're ready to read and write global-state patches.</p>
 </section>
 
 <!-- next -->
