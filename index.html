@@ -69,6 +69,20 @@ ol.trace{padding-left:22px} ol.trace li{margin:6px 0}
 .progress span{color:var(--accent);font-weight:600}
 a{color:var(--accent)}
 @media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+
+.play{border:1px solid var(--line);border-radius:8px;padding:14px 18px;margin:20px 0}
+.play .lbl{font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.play h3{margin-top:6px}
+.play .expect-line{margin:10px 0 0}
+.play textarea.code{display:block;width:100%;max-width:100%;box-sizing:border-box;background:var(--code-bg);color:var(--code-fg);font:13.5px/1.6 var(--mono);padding:14px 16px;border:0;border-radius:8px;tab-size:8;-moz-tab-size:8;resize:vertical;white-space:pre;overflow:auto;margin:12px 0 0}
+.play textarea.code:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.play-buttons{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.play-buttons button{font:600 14px var(--body);padding:8px 14px;border-radius:6px;border:1px solid var(--ink);background:var(--bg);color:var(--ink);cursor:pointer}
+.play-buttons button.run{background:var(--ink);color:var(--bg)}
+.play-buttons button:disabled{opacity:.5;cursor:wait}
+.play-buttons button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.play pre.out{min-height:2.4em;white-space:pre-wrap}
+.play pre.out.pass{outline:3px solid var(--ink)}
 </style>
 </head>
 <body>
@@ -83,6 +97,7 @@ a{color:var(--accent)}
   <h1>Learn C by reading Git</h1>
   <p class="lede">A zero-to-hero path through the C that Git is written in, aimed at people who want to contribute, especially to the work on reducing Git's global state (<code>the_repository</code>). If you've never written C, start with sections A–D. Every level after that teaches one idea from a real piece of git.git, with a small exercise.</p>
   <p class="bytes-note">Pinned to <b>Git v2.56.0</b> (released 27 September 2026). Every file and line cited here links to that release, so the examples stay correct as Git moves on. To compare with today's code, run the same <code>git grep</code> on <code>master</code>.</p>
+  <p class="bytes-note">Every C level has a <b>practice box</b>: edit the code, press <b>▶ Run</b> to compile it with real gcc 14.2 through <a href="https://godbolt.org/">Compiler Explorer</a>, and <b>✓ Check my answer</b> to compare your output. Nothing to install. Your edits are saved in your browser.</p>
   <p class="progress">Progress: <span id="count">0</span> of <span id="total">0</span> sections marked done (saved in this browser only).</p>
 </header>
 
@@ -215,6 +230,82 @@ cd t
 }</code></pre>
 <p>Comparisons give 1 or 0 in C, so you can return them directly. Without a return type, modern compilers refuse the code, because old C's “implicit int” rule is gone.</p></details>
   </div>
+    <div class="play" id="play-sc" data-expect="area: 32768
+perimeter: 768">
+    <div class="lbl">Practice in your browser · 1 of 9</div>
+    <h3>Your first program</h3>
+    <p>Print the area <b>and</b> the perimeter of a 256 × 128 image. Fill in the TODO so the output matches the expected lines.</p>
+    <p class="expect-line"><b>Expected output:</b></p>
+<pre class="expect"><code>area: 32768
+perimeter: 768</code></pre>
+    <textarea class="code" spellcheck="false" autocapitalize="off" autocomplete="off" rows="19" aria-label="C code for Your first program">#include &lt;stdio.h&gt;
+
+static int area(int width, int height)
+{
+	return width * height;
+}
+
+/* TODO: write perimeter(width, height), which returns 2 * (width + height) */
+
+int main(void)
+{
+	int w = 256;
+	int h = 128;
+
+	printf(&quot;area: %d\n&quot;, area(w, h));
+	/* TODO: print &quot;perimeter: &quot; followed by perimeter(w, h) */
+	return 0;
+}
+</textarea>
+    <textarea class="starter" hidden>#include &lt;stdio.h&gt;
+
+static int area(int width, int height)
+{
+	return width * height;
+}
+
+/* TODO: write perimeter(width, height), which returns 2 * (width + height) */
+
+int main(void)
+{
+	int w = 256;
+	int h = 128;
+
+	printf(&quot;area: %d\n&quot;, area(w, h));
+	/* TODO: print &quot;perimeter: &quot; followed by perimeter(w, h) */
+	return 0;
+}
+</textarea>
+    <div class="play-buttons">
+      <button type="button" class="run">▶ Run</button>
+      <button type="button" class="check">✓ Check my answer</button>
+      <button type="button" class="reset">Reset</button>
+    </div>
+    <pre class="out" aria-live="polite"><code>Press Run to compile and run this program with gcc.</code></pre>
+    <details><summary>Show a solution</summary>
+<pre><code>#include &lt;stdio.h&gt;
+
+static int area(int width, int height)
+{
+	return width * height;
+}
+
+static int perimeter(int width, int height)
+{
+	return 2 * (width + height);
+}
+
+int main(void)
+{
+	int w = 256;
+	int h = 128;
+
+	printf(&quot;area: %d\n&quot;, area(w, h));
+	printf(&quot;perimeter: %d\n&quot;, perimeter(w, h));
+	return 0;
+}
+</code></pre></details>
+  </div>
   <label class="mark"><input type="checkbox" id="done-sc"> I've done C</label>
 </section>
 
@@ -315,6 +406,65 @@ git blame -L 60,90 merge-blobs.c             <span class="c"># who wrote each li
 <span class="k">#endif</span></code></pre>
 <p><code>area.c</code> includes <code>"area.h"</code> and defines the function (without <code>static</code>, so other files can see it). <code>main.c</code> includes <code>"area.h"</code> and calls it.</p></details>
   </div>
+    <div class="play" id="play-l1" data-expect="hello!">
+    <div class="lbl">Practice in your browser · 2 of 9</div>
+    <h3>Declare before you use</h3>
+    <p>In C a function must be <b>declared</b> before it is called. <code>main</code> calls <code>shout()</code>, but <code>shout()</code> is defined below it. Add a one-line declaration above <code>main</code> (this is what a header file does for you).</p>
+    <p class="expect-line"><b>Expected output:</b></p>
+<pre class="expect"><code>hello!</code></pre>
+    <textarea class="code" spellcheck="false" autocapitalize="off" autocomplete="off" rows="15" aria-label="C code for Declare before you use">#include &lt;stdio.h&gt;
+
+/* TODO: declare shout() here, the same way a header would */
+
+int main(void)
+{
+	shout(&quot;hello&quot;);
+	return 0;
+}
+
+void shout(const char *word)
+{
+	printf(&quot;%s!\n&quot;, word);
+}
+</textarea>
+    <textarea class="starter" hidden>#include &lt;stdio.h&gt;
+
+/* TODO: declare shout() here, the same way a header would */
+
+int main(void)
+{
+	shout(&quot;hello&quot;);
+	return 0;
+}
+
+void shout(const char *word)
+{
+	printf(&quot;%s!\n&quot;, word);
+}
+</textarea>
+    <div class="play-buttons">
+      <button type="button" class="run">▶ Run</button>
+      <button type="button" class="check">✓ Check my answer</button>
+      <button type="button" class="reset">Reset</button>
+    </div>
+    <pre class="out" aria-live="polite"><code>Press Run to compile and run this program with gcc.</code></pre>
+    <details><summary>Show a solution</summary>
+<pre><code>#include &lt;stdio.h&gt;
+
+void shout(const char *word);
+
+int main(void)
+{
+	shout(&quot;hello&quot;);
+	return 0;
+}
+
+void shout(const char *word)
+{
+	printf(&quot;%s!\n&quot;, word);
+}
+</code></pre></details>
+  </div>
   <label class="mark"><input type="checkbox" id="done-l1"> I've done level 1</label>
 </section>
 
@@ -354,6 +504,73 @@ git blame -L 60,90 merge-blobs.c             <span class="c"># who wrote each li
 <pre><code><span class="k">#define</span> WINDOW_INIT { .width = 1, .height = 1 }
 <span class="k">struct</span> window w = WINDOW_INIT;
 printf(<span class="s">"%d %d %d %d\n"</span>, w.x, w.y, w.width, w.height);   <span class="c">/* 0 0 1 1 */</span></code></pre></details>
+  </div>
+    <div class="play" id="play-l2" data-expect="0 0 1 1">
+    <div class="lbl">Practice in your browser · 3 of 9</div>
+    <h3>Structs and an _INIT macro</h3>
+    <p>Git gives most structs a <code>FOO_INIT</code> macro. Write <code>WINDOW_INIT</code> so a new window has <code>width</code> and <code>height</code> set to 1, and everything else 0.</p>
+    <p class="expect-line"><b>Expected output:</b></p>
+<pre class="expect"><code>0 0 1 1</code></pre>
+    <textarea class="code" spellcheck="false" autocapitalize="off" autocomplete="off" rows="18" aria-label="C code for Structs and an _INIT macro">#include &lt;stdio.h&gt;
+
+struct window {
+	int x, y;
+	int width, height;
+};
+
+/* TODO: #define WINDOW_INIT using designated initializers, like REPO_SETTINGS_INIT */
+#define WINDOW_INIT { 0 }
+
+int main(void)
+{
+	struct window w = WINDOW_INIT;
+
+	printf(&quot;%d %d %d %d\n&quot;, w.x, w.y, w.width, w.height);
+	return 0;
+}
+</textarea>
+    <textarea class="starter" hidden>#include &lt;stdio.h&gt;
+
+struct window {
+	int x, y;
+	int width, height;
+};
+
+/* TODO: #define WINDOW_INIT using designated initializers, like REPO_SETTINGS_INIT */
+#define WINDOW_INIT { 0 }
+
+int main(void)
+{
+	struct window w = WINDOW_INIT;
+
+	printf(&quot;%d %d %d %d\n&quot;, w.x, w.y, w.width, w.height);
+	return 0;
+}
+</textarea>
+    <div class="play-buttons">
+      <button type="button" class="run">▶ Run</button>
+      <button type="button" class="check">✓ Check my answer</button>
+      <button type="button" class="reset">Reset</button>
+    </div>
+    <pre class="out" aria-live="polite"><code>Press Run to compile and run this program with gcc.</code></pre>
+    <details><summary>Show a solution</summary>
+<pre><code>#include &lt;stdio.h&gt;
+
+struct window {
+	int x, y;
+	int width, height;
+};
+
+#define WINDOW_INIT { .width = 1, .height = 1 }
+
+int main(void)
+{
+	struct window w = WINDOW_INIT;
+
+	printf(&quot;%d %d %d %d\n&quot;, w.x, w.y, w.width, w.height);
+	return 0;
+}
+</code></pre></details>
   </div>
   <label class="mark"><input type="checkbox" id="done-l2"> I've done level 2</label>
 </section>
@@ -399,6 +616,76 @@ printf(<span class="s">"%d %d %d %d\n"</span>, w.x, w.y, w.width, w.height);   <
 }</code></pre>
 <p>C passes copies of arguments. With plain <code>int</code>s, the function swaps its own copies, and the caller's variables don't change. Passing addresses lets it change the originals.</p></details>
   </div>
+    <div class="play" id="play-l3" data-expect="x=2 y=1">
+    <div class="lbl">Practice in your browser · 4 of 9</div>
+    <h3>Pointers: swap two numbers</h3>
+    <p><code>swap()</code> must change the caller's variables. Fix the function (and the call) so the output says <code>x=2 y=1</code>.</p>
+    <p class="expect-line"><b>Expected output:</b></p>
+<pre class="expect"><code>x=2 y=1</code></pre>
+    <textarea class="code" spellcheck="false" autocapitalize="off" autocomplete="off" rows="19" aria-label="C code for Pointers: swap two numbers">#include &lt;stdio.h&gt;
+
+/* TODO: this swaps copies only. Make it take pointers. */
+static void swap(int a, int b)
+{
+	int tmp = a;
+	a = b;
+	b = tmp;
+}
+
+int main(void)
+{
+	int x = 1, y = 2;
+
+	swap(x, y); /* TODO: pass addresses */
+	printf(&quot;x=%d y=%d\n&quot;, x, y);
+	return 0;
+}
+</textarea>
+    <textarea class="starter" hidden>#include &lt;stdio.h&gt;
+
+/* TODO: this swaps copies only. Make it take pointers. */
+static void swap(int a, int b)
+{
+	int tmp = a;
+	a = b;
+	b = tmp;
+}
+
+int main(void)
+{
+	int x = 1, y = 2;
+
+	swap(x, y); /* TODO: pass addresses */
+	printf(&quot;x=%d y=%d\n&quot;, x, y);
+	return 0;
+}
+</textarea>
+    <div class="play-buttons">
+      <button type="button" class="run">▶ Run</button>
+      <button type="button" class="check">✓ Check my answer</button>
+      <button type="button" class="reset">Reset</button>
+    </div>
+    <pre class="out" aria-live="polite"><code>Press Run to compile and run this program with gcc.</code></pre>
+    <details><summary>Show a solution</summary>
+<pre><code>#include &lt;stdio.h&gt;
+
+static void swap(int *a, int *b)
+{
+	int tmp = *a;
+	*a = *b;
+	*b = tmp;
+}
+
+int main(void)
+{
+	int x = 1, y = 2;
+
+	swap(&amp;x, &amp;y);
+	printf(&quot;x=%d y=%d\n&quot;, x, y);
+	return 0;
+}
+</code></pre></details>
+  </div>
   <label class="mark"><input type="checkbox" id="done-l3"> I've done level 3</label>
 </section>
 
@@ -437,6 +724,88 @@ strbuf_release(&amp;sb);              <span class="c">/* frees the memory */</sp
 strcpy(name, <span class="s">"refs/heads/main"</span>);</code></pre>
     <details><summary>Answer</summary><p>The string needs 16 bytes (15 characters plus the zero byte), but <code>name</code> holds 8. <code>strcpy</code> writes past the end and overwrites whatever is next in memory. That's exactly why Git bans it.</p></details>
   </div>
+    <div class="play" id="play-l4" data-expect="refs/heads/main (15 chars)">
+    <div class="lbl">Practice in your browser · 5 of 9</div>
+    <h3>Strings and memory: write your own strdup</h3>
+    <p>Write <code>my_strdup()</code>: allocate <code>strlen(s) + 1</code> bytes (the +1 is for the zero byte at the end), copy the string in, and return it. Then <code>free</code> it in <code>main</code>.</p>
+    <p class="expect-line"><b>Expected output:</b></p>
+<pre class="expect"><code>refs/heads/main (15 chars)</code></pre>
+    <textarea class="code" spellcheck="false" autocapitalize="off" autocomplete="off" rows="21" aria-label="C code for Strings and memory: write your own strdup">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+static char *my_strdup(const char *s)
+{
+	/* TODO: malloc strlen(s) + 1 bytes, memcpy the string (with its &#x27;\0&#x27;), return it */
+	return NULL;
+}
+
+int main(void)
+{
+	char *copy = my_strdup(&quot;refs/heads/main&quot;);
+
+	if (!copy)
+		return 1;
+	printf(&quot;%s (%zu chars)\n&quot;, copy, strlen(copy));
+	/* TODO: give the memory back */
+	return 0;
+}
+</textarea>
+    <textarea class="starter" hidden>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+static char *my_strdup(const char *s)
+{
+	/* TODO: malloc strlen(s) + 1 bytes, memcpy the string (with its &#x27;\0&#x27;), return it */
+	return NULL;
+}
+
+int main(void)
+{
+	char *copy = my_strdup(&quot;refs/heads/main&quot;);
+
+	if (!copy)
+		return 1;
+	printf(&quot;%s (%zu chars)\n&quot;, copy, strlen(copy));
+	/* TODO: give the memory back */
+	return 0;
+}
+</textarea>
+    <div class="play-buttons">
+      <button type="button" class="run">▶ Run</button>
+      <button type="button" class="check">✓ Check my answer</button>
+      <button type="button" class="reset">Reset</button>
+    </div>
+    <pre class="out" aria-live="polite"><code>Press Run to compile and run this program with gcc.</code></pre>
+    <details><summary>Show a solution</summary>
+<pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+static char *my_strdup(const char *s)
+{
+	size_t len = strlen(s) + 1;
+	char *copy = malloc(len);
+
+	if (!copy)
+		return NULL;
+	memcpy(copy, s, len);
+	return copy;
+}
+
+int main(void)
+{
+	char *copy = my_strdup(&quot;refs/heads/main&quot;);
+
+	if (!copy)
+		return 1;
+	printf(&quot;%s (%zu chars)\n&quot;, copy, strlen(copy));
+	free(copy);
+	return 0;
+}
+</code></pre></details>
+  </div>
   <label class="mark"><input type="checkbox" id="done-l4"> I've done level 4</label>
 </section>
 
@@ -469,6 +838,142 @@ out_no_mmfile:
   <div class="ex"><div class="lbl">Exercise</div>
     <p>If the second <code>fill_mmfile_blob</code> fails, which buffers get freed, and why not <code>f2</code>?</p>
     <details><summary>Answer</summary><p>It jumps to <code>out_free_f1</code>, so only <code>f1</code> is freed with <code>free_mmfile(&amp;f1)</code>. The <code>out_free_f2_f1</code> label above it is skipped. <code>f2</code> was never filled, so there's nothing to free.</p></details>
+  </div>
+    <div class="play" id="play-l5" data-expect="allocated 10 bytes
+freed a
+load returned -1">
+    <div class="lbl">Practice in your browser · 6 of 9</div>
+    <h3>goto cleanup</h3>
+    <p><code>load()</code> allocates two buffers. If the second allocation fails, it must free the first and return -1. Finish the cleanup labels so each buffer is freed exactly once. (The fake allocator fails on its 2nd call so you can see the error path.)</p>
+    <p class="expect-line"><b>Expected output:</b></p>
+<pre class="expect"><code>allocated 10 bytes
+freed a
+load returned -1</code></pre>
+    <textarea class="code" spellcheck="false" autocapitalize="off" autocomplete="off" rows="28" aria-label="C code for goto cleanup">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+static int calls;
+
+static void *fake_alloc(size_t n)
+{
+	if (++calls == 2)
+		return NULL; /* pretend we ran out of memory */
+	printf(&quot;allocated %zu bytes\n&quot;, n);
+	return malloc(n);
+}
+
+static int load(void)
+{
+	char *a, *b;
+	int ret = -1;
+
+	a = fake_alloc(10);
+	if (!a)
+		goto out;
+	b = fake_alloc(20);
+	if (!b)
+		goto out_free_a;
+
+	ret = 0;
+	free(b);
+	/* TODO: add the label &quot;out_free_a:&quot; that frees a and prints &quot;freed a&quot; */
+	free(a);
+out:
+	return ret;
+}
+
+int main(void)
+{
+	printf(&quot;load returned %d\n&quot;, load());
+	return 0;
+}
+</textarea>
+    <textarea class="starter" hidden>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+static int calls;
+
+static void *fake_alloc(size_t n)
+{
+	if (++calls == 2)
+		return NULL; /* pretend we ran out of memory */
+	printf(&quot;allocated %zu bytes\n&quot;, n);
+	return malloc(n);
+}
+
+static int load(void)
+{
+	char *a, *b;
+	int ret = -1;
+
+	a = fake_alloc(10);
+	if (!a)
+		goto out;
+	b = fake_alloc(20);
+	if (!b)
+		goto out_free_a;
+
+	ret = 0;
+	free(b);
+	/* TODO: add the label &quot;out_free_a:&quot; that frees a and prints &quot;freed a&quot; */
+	free(a);
+out:
+	return ret;
+}
+
+int main(void)
+{
+	printf(&quot;load returned %d\n&quot;, load());
+	return 0;
+}
+</textarea>
+    <div class="play-buttons">
+      <button type="button" class="run">▶ Run</button>
+      <button type="button" class="check">✓ Check my answer</button>
+      <button type="button" class="reset">Reset</button>
+    </div>
+    <pre class="out" aria-live="polite"><code>Press Run to compile and run this program with gcc.</code></pre>
+    <details><summary>Show a solution</summary>
+<pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+static int calls;
+
+static void *fake_alloc(size_t n)
+{
+	if (++calls == 2)
+		return NULL; /* pretend we ran out of memory */
+	printf(&quot;allocated %zu bytes\n&quot;, n);
+	return malloc(n);
+}
+
+static int load(void)
+{
+	char *a, *b;
+	int ret = -1;
+
+	a = fake_alloc(10);
+	if (!a)
+		goto out;
+	b = fake_alloc(20);
+	if (!b)
+		goto out_free_a;
+
+	ret = 0;
+	free(b);
+out_free_a:
+	free(a);
+	printf(&quot;freed a\n&quot;);
+out:
+	return ret;
+}
+
+int main(void)
+{
+	printf(&quot;load returned %d\n&quot;, load());
+	return 0;
+}
+</code></pre></details>
   </div>
   <label class="mark"><input type="checkbox" id="done-l5"> I've done level 5</label>
 </section>
@@ -506,6 +1011,73 @@ out_no_mmfile:
   <div class="ex"><div class="lbl">Exercise</div>
     <p>In a scratch copy of Git, delete the <code>#define USE_THE_REPOSITORY_VARIABLE</code> line from <code>prune-packed.c</code> and run <code>make prune-packed.o</code>. Read the errors. Then put the line back.</p>
     <details><summary>Answer</summary><p>You get errors like “use of undeclared identifier 'the_repository'” at each place the file uses it. That list is exactly the work needed to free the file from the global.</p></details>
+  </div>
+    <div class="play" id="play-l6" data-expect="samples: 4
+buf is NULL">
+    <div class="lbl">Practice in your browser · 7 of 9</div>
+    <h3>Macros from git-compat-util.h</h3>
+    <p>Git defines <code>ARRAY_SIZE</code> and <code>FREE_AND_NULL</code> in <code>git-compat-util.h</code>. Write simple versions of both and use them.</p>
+    <p class="expect-line"><b>Expected output:</b></p>
+<pre class="expect"><code>samples: 4
+buf is NULL</code></pre>
+    <textarea class="code" spellcheck="false" autocapitalize="off" autocomplete="off" rows="17" aria-label="C code for Macros from git-compat-util.h">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+/* TODO: ARRAY_SIZE(x): number of elements in a fixed array */
+/* TODO: FREE_AND_NULL(p): free p, then set it to NULL (wrap in do { } while (0)) */
+
+int main(void)
+{
+	int bits[] = { 8, 8, 8, 8 };
+	char *buf = malloc(16);
+
+	printf(&quot;samples: %zu\n&quot;, ARRAY_SIZE(bits));
+	FREE_AND_NULL(buf);
+	printf(&quot;buf is %s\n&quot;, buf ? &quot;set&quot; : &quot;NULL&quot;);
+	return 0;
+}
+</textarea>
+    <textarea class="starter" hidden>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+/* TODO: ARRAY_SIZE(x): number of elements in a fixed array */
+/* TODO: FREE_AND_NULL(p): free p, then set it to NULL (wrap in do { } while (0)) */
+
+int main(void)
+{
+	int bits[] = { 8, 8, 8, 8 };
+	char *buf = malloc(16);
+
+	printf(&quot;samples: %zu\n&quot;, ARRAY_SIZE(bits));
+	FREE_AND_NULL(buf);
+	printf(&quot;buf is %s\n&quot;, buf ? &quot;set&quot; : &quot;NULL&quot;);
+	return 0;
+}
+</textarea>
+    <div class="play-buttons">
+      <button type="button" class="run">▶ Run</button>
+      <button type="button" class="check">✓ Check my answer</button>
+      <button type="button" class="reset">Reset</button>
+    </div>
+    <pre class="out" aria-live="polite"><code>Press Run to compile and run this program with gcc.</code></pre>
+    <details><summary>Show a solution</summary>
+<pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+#define FREE_AND_NULL(p) do { free(p); (p) = NULL; } while (0)
+
+int main(void)
+{
+	int bits[] = { 8, 8, 8, 8 };
+	char *buf = malloc(16);
+
+	printf(&quot;samples: %zu\n&quot;, ARRAY_SIZE(bits));
+	FREE_AND_NULL(buf);
+	printf(&quot;buf is %s\n&quot;, buf ? &quot;set&quot; : &quot;NULL&quot;);
+	return 0;
+}
+</code></pre></details>
   </div>
   <label class="mark"><input type="checkbox" id="done-l6"> I've done level 6</label>
 </section>
@@ -550,6 +1122,76 @@ out_no_mmfile:
     <p>Read all of <code>prune-packed.c</code> (it's about 50 lines). List every use of global state. Then find who calls <code>prune_packed_objects()</code> with <code>git grep</code>, and check whether those callers already have a repository they could pass in.</p>
     <details><summary>Hint</summary><p>There are three uses of <code>the_repository</code> and one file-level <code>static</code>. The interesting question is the callers: if they already hold a <code>struct repository *</code>, the change could follow the same pattern as Level 3. Work it out yourself, and check the mailing list archive first in case someone is already doing it.</p></details>
   </div>
+    <div class="play" id="play-l7" data-expect="a=2 b=1" data-forbid="^\s*static\s+int\s+counter\s*;" data-forbid-msg="The global &lt;code&gt;counter&lt;/code&gt; is still there. The point is to remove it and pass the counter in.">
+    <div class="lbl">Practice in your browser · 8 of 9</div>
+    <h3>Global state vs. passing it in</h3>
+    <p><code>counter</code> is a global, like <code>the_repository</code>. Remove the global: make <code>bump()</code> take a pointer to the counter it should change, and keep two separate counters in <code>main</code>.</p>
+    <p class="expect-line"><b>Expected output:</b></p>
+<pre class="expect"><code>a=2 b=1</code></pre>
+    <textarea class="code" spellcheck="false" autocapitalize="off" autocomplete="off" rows="19" aria-label="C code for Global state vs. passing it in">#include &lt;stdio.h&gt;
+
+static int counter; /* TODO: delete this global */
+
+static int bump(void) /* TODO: take an int *count instead */
+{
+	return ++counter;
+}
+
+int main(void)
+{
+	/* TODO: two local counters, a and b; bump a twice and b once */
+	bump();
+	bump();
+	bump();
+	printf(&quot;a=%d b=%d\n&quot;, counter, 0); /* TODO: print a and b */
+	return 0;
+}
+</textarea>
+    <textarea class="starter" hidden>#include &lt;stdio.h&gt;
+
+static int counter; /* TODO: delete this global */
+
+static int bump(void) /* TODO: take an int *count instead */
+{
+	return ++counter;
+}
+
+int main(void)
+{
+	/* TODO: two local counters, a and b; bump a twice and b once */
+	bump();
+	bump();
+	bump();
+	printf(&quot;a=%d b=%d\n&quot;, counter, 0); /* TODO: print a and b */
+	return 0;
+}
+</textarea>
+    <div class="play-buttons">
+      <button type="button" class="run">▶ Run</button>
+      <button type="button" class="check">✓ Check my answer</button>
+      <button type="button" class="reset">Reset</button>
+    </div>
+    <pre class="out" aria-live="polite"><code>Press Run to compile and run this program with gcc.</code></pre>
+    <details><summary>Show a solution</summary>
+<pre><code>#include &lt;stdio.h&gt;
+
+static int bump(int *count)
+{
+	return ++*count;
+}
+
+int main(void)
+{
+	int a = 0, b = 0;
+
+	bump(&amp;a);
+	bump(&amp;a);
+	bump(&amp;b);
+	printf(&quot;a=%d b=%d\n&quot;, a, b);
+	return 0;
+}
+</code></pre></details>
+  </div>
   <label class="mark"><input type="checkbox" id="done-l7"> I've done level 7</label>
 </section>
 
@@ -582,6 +1224,96 @@ out_no_mmfile:
 …
 <span class="k">int</span> sum = 0;
 for_each_int(xs, 3, add_one, &amp;sum);</code></pre></details>
+  </div>
+    <div class="play" id="play-l8" data-expect="sum=6">
+    <div class="lbl">Practice in your browser · 9 of 9</div>
+    <h3>Callbacks with void *data</h3>
+    <p>Like Git's <code>for_each_remote()</code>, <code>for_each_int()</code> calls a function for every item and passes a <code>void *data</code> along. Write <code>add_one()</code> so it adds each number into the <code>int</code> that <code>data</code> points to.</p>
+    <p class="expect-line"><b>Expected output:</b></p>
+<pre class="expect"><code>sum=6</code></pre>
+    <textarea class="code" spellcheck="false" autocapitalize="off" autocomplete="off" rows="25" aria-label="C code for Callbacks with void *data">#include &lt;stdio.h&gt;
+
+typedef void (*each_int_fn)(int value, void *data);
+
+static void for_each_int(const int *xs, int n, each_int_fn fn, void *data)
+{
+	for (int i = 0; i &lt; n; i++)
+		fn(xs[i], data);
+}
+
+static void add_one(int value, void *data)
+{
+	/* TODO: turn data back into an int *, and add value to it */
+}
+
+int main(void)
+{
+	int xs[] = { 1, 2, 3 };
+	int sum = 0;
+
+	for_each_int(xs, 3, add_one, &amp;sum);
+	printf(&quot;sum=%d\n&quot;, sum);
+	return 0;
+}
+</textarea>
+    <textarea class="starter" hidden>#include &lt;stdio.h&gt;
+
+typedef void (*each_int_fn)(int value, void *data);
+
+static void for_each_int(const int *xs, int n, each_int_fn fn, void *data)
+{
+	for (int i = 0; i &lt; n; i++)
+		fn(xs[i], data);
+}
+
+static void add_one(int value, void *data)
+{
+	/* TODO: turn data back into an int *, and add value to it */
+}
+
+int main(void)
+{
+	int xs[] = { 1, 2, 3 };
+	int sum = 0;
+
+	for_each_int(xs, 3, add_one, &amp;sum);
+	printf(&quot;sum=%d\n&quot;, sum);
+	return 0;
+}
+</textarea>
+    <div class="play-buttons">
+      <button type="button" class="run">▶ Run</button>
+      <button type="button" class="check">✓ Check my answer</button>
+      <button type="button" class="reset">Reset</button>
+    </div>
+    <pre class="out" aria-live="polite"><code>Press Run to compile and run this program with gcc.</code></pre>
+    <details><summary>Show a solution</summary>
+<pre><code>#include &lt;stdio.h&gt;
+
+typedef void (*each_int_fn)(int value, void *data);
+
+static void for_each_int(const int *xs, int n, each_int_fn fn, void *data)
+{
+	for (int i = 0; i &lt; n; i++)
+		fn(xs[i], data);
+}
+
+static void add_one(int value, void *data)
+{
+	int *sum = data;
+	*sum += value;
+}
+
+int main(void)
+{
+	int xs[] = { 1, 2, 3 };
+	int sum = 0;
+
+	for_each_int(xs, 3, add_one, &amp;sum);
+	printf(&quot;sum=%d\n&quot;, sum);
+	return 0;
+}
+</code></pre></details>
   </div>
   <label class="mark"><input type="checkbox" id="done-l8"> I've done level 8</label>
 </section>
@@ -878,6 +1610,55 @@ git send-email --to=git@vger.kernel.org outgoing/*  <span class="c"># for real</
     });
   });
   refresh();
+})();
+</script>
+
+<script>
+(function(){
+  var API='https://godbolt.org/api/compiler/cg142/compile';
+  function key(id){return 'git-c-play-'+id;}
+  function setOut(pre,text,pass){pre.querySelector('code').textContent=text;pre.classList.toggle('pass',!!pass);}
+  function clean(t){return t.replace(/\x1b\[[0-9;]*[mK]/g,'').replace(/<source>/g,'program.c');}
+  function compile(src){
+    return fetch(API,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify({source:src,compiler:'cg142',lang:'c',allowStoreCodeDebug:false,
+        options:{userArguments:'-Wall -std=gnu99 -fdiagnostics-color=never',
+          executeParameters:{args:[],stdin:''},compilerOptions:{executorRequest:true},
+          filters:{execute:true},tools:[],libraries:[]}})})
+    .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();});
+  }
+  function text(lines){return (lines||[]).map(function(l){return l.text;}).join('\n');}
+  [].slice.call(document.querySelectorAll('.play')).forEach(function(box){
+    var ta=box.querySelector('textarea.code'), starter=box.querySelector('textarea.starter').value,
+        out=box.querySelector('pre.out'), btns=[].slice.call(box.querySelectorAll('.play-buttons button'));
+    try{var saved=localStorage.getItem(key(box.id));if(saved)ta.value=saved;}catch(e){}
+    ta.addEventListener('input',function(){try{localStorage.setItem(key(box.id),ta.value);}catch(e){}});
+    ta.addEventListener('keydown',function(e){
+      if(e.key==='Tab'&&!e.shiftKey&&!e.metaKey&&!e.ctrlKey){e.preventDefault();
+        var a=ta.selectionStart,b=ta.selectionEnd;ta.value=ta.value.slice(0,a)+'\t'+ta.value.slice(b);
+        ta.selectionStart=ta.selectionEnd=a+1;ta.dispatchEvent(new Event('input'));}
+    });
+    function go(check){
+      btns.forEach(function(b){b.disabled=true;});
+      setOut(out,'Compiling with gcc 14.2 and running…');
+      compile(ta.value).then(function(r){
+        var build=r.buildResult||{}, errs=clean(text(build.stderr)), so=text(r.stdout), se=clean(text(r.stderr));
+        if(build.code!==0&&build.code!==undefined){setOut(out,'Compile error (fix the first one, then Run again):\n\n'+errs);return;}
+        var msg=(errs?'Compiler warnings:\n'+errs+'\n\n':'')+'Program output:\n'+(so||'(nothing printed)')+(se?'\n'+se:'')+'\n\n[exit code '+r.code+']';
+        if(!check){setOut(out,msg);return;}
+        var forbid=box.getAttribute('data-forbid');
+        if(forbid&&new RegExp(forbid,'m').test(ta.value)){setOut(out,'Not yet. '+box.getAttribute('data-forbid-msg').replace(/<[^>]+>/g,'')+'\n\n'+msg);return;}
+        var want=box.getAttribute('data-expect').trim(), got=(so||'').trim();
+        if(got===want)setOut(out,'✓ Correct! Your output matches.\n\n'+msg,true);
+        else setOut(out,'Not yet. The output should be:\n'+want+'\n\n'+msg);
+      }).catch(function(){
+        setOut(out,"Couldn't reach the online compiler (Compiler Explorer). You can still run it on your own computer:\nsave the code as program.c, then run\n  cc -Wall -o program program.c && ./program");
+      }).then(function(){btns.forEach(function(b){b.disabled=false;});});
+    }
+    box.querySelector('.run').addEventListener('click',function(){go(false);});
+    box.querySelector('.check').addEventListener('click',function(){go(true);});
+    box.querySelector('.reset').addEventListener('click',function(){ta.value=starter;try{localStorage.removeItem(key(box.id));}catch(e){}setOut(out,'Press Run to compile and run this program with gcc.');});
+  });
 })();
 </script>
 </body>
